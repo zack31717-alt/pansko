@@ -6,7 +6,7 @@ import {
   Activity, Phone, Mail, CheckCircle2,
   ArrowUp, LineChart,
   Target, HardHat, DollarSign, Puzzle,
-  Printer, Hash, MapPin, ChevronRight
+  Printer, Hash, MapPin, ChevronRight, Leaf
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 
@@ -58,6 +58,21 @@ const MachineryGraphics = {
       <path d="M15 50 L85 50" stroke="#3b82f6" strokeWidth="2" opacity="0.2" strokeDasharray="4,2" />
     </svg>
   ),
+  DustCollector: () => (
+    <svg viewBox="0 0 100 100" className="w-full h-full">
+      {/* 支架架台 */}
+      <path d="M30 60 L30 90 M70 60 L70 90 M30 85 L70 85" stroke="#64748b" strokeWidth="3" fill="none" />
+      {/* 筒體 */}
+      <rect x="35" y="20" width="30" height="40" fill="#e2e8f0" stroke="#94a3b8" strokeWidth="1" />
+      <path d="M35 60 L50 80 L65 60" fill="#cbd5e1" stroke="#94a3b8" />
+      {/* 頂部風機 */}
+      <circle cx="65" cy="20" r="10" fill="#94a3b8" stroke="#475569" />
+      <rect x="70" y="15" width="15" height="8" rx="1" fill="#475569" />
+      {/* 脈衝反吹閥 */}
+      <rect x="40" y="30" width="20" height="4" fill="#3b82f6" opacity="0.4" />
+      <path d="M40 32 L30 32" stroke="#3b82f6" strokeWidth="1" />
+    </svg>
+  ),
   StructuralPlatform: () => (
     <svg viewBox="0 0 100 100" className="w-full h-full">
       <rect x="10" y="60" width="80" height="5" fill="#94a3b8" />
@@ -78,7 +93,7 @@ const products = [
       "提升效率：原料可快速、批量投入，縮短換料時間。",
       "節省人力：單人即可操作，降低人工搬運與高處作業風險。",
       "環境潔淨：結合集塵器與密封結構，有效防止粉塵外洩。",
-      "高度客製：可依物料特性選配拆袋刀、振動器、除鐵器等功能。"
+      "高度客製：可依物料特性選配拆袋刀、振動器等功能。"
     ]
   },
   {
@@ -131,6 +146,20 @@ const products = [
     ]
   },
   {
+    id: "dust",
+    cat: "4. 環境 (Environmental)",
+    title: "集塵機 (Dust Collector)",
+    subtitle: "維護產線潔淨與人員安全的核心保障",
+    Graphic: MachineryGraphics.DustCollector,
+    advantages: [
+      "高效過濾：採用多層濾材設計，有效攔截微細粉塵，效率達 99% 以上。",
+      "自動清灰：具備氣動脈衝反吹系統，自動保持濾材潔淨，延長使用壽命。",
+      "穩定吸力：搭載高效能風機與渦輪葉片，吸力穩定不衰退，適用長時運轉。",
+      "維護簡便：採模組化設計，濾材更換快速，控制箱與馬達各自獨立。"
+    ],
+    scenarios: "適用於各式產生粉塵之產業：金屬加工、木工、食品、電子、塑膠等製造業。"
+  },
+  {
     id: "platform",
     cat: "5. 整合 (Integration)",
     title: "客製化設備鋼構架台",
@@ -160,7 +189,7 @@ const App: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-sky-50 font-sans text-slate-800 antialiased">
-      {/* 科技感背景 */}
+      {/* 背景裝飾 */}
       <div className="fixed inset-0 pointer-events-none z-0 opacity-40">
         <div className="absolute top-0 right-0 w-[800px] h-[800px] bg-blue-200/40 blur-[150px] rounded-full"></div>
         <div className="absolute bottom-0 left-0 w-[600px] h-[600px] bg-sky-200/40 blur-[120px] rounded-full"></div>
@@ -190,16 +219,16 @@ const App: React.FC = () => {
         <div className="container mx-auto px-6 relative z-10 text-center">
           <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8 }}>
             <div className="inline-flex items-center gap-3 px-6 py-2 bg-blue-600/5 border border-blue-500/10 text-blue-600 text-[10px] font-black uppercase tracking-[0.4em] mb-12 rounded-full">
-              Smart Conveying & System Integration
+              High Efficiency Dust Control Systems
             </div>
             <h1 className="text-6xl lg:text-9xl font-black mb-10 leading-tight tracking-tighter text-blue-950">
-              智慧輸送<br/><span className="text-blue-600">系統整合</span>
+              維護產線<br/><span className="text-blue-600">潔淨安全</span>
             </h1>
             <p className="text-2xl text-slate-600 mb-12 font-medium max-w-3xl mx-auto italic">
-              從進料到製程的完整粉體物料處理方案
+              錕興機械：專業集塵、輸送與智慧系統整合專家
             </p>
-            <button onClick={() => scrollTo('flow')} className="px-12 py-6 bg-blue-600 text-white font-black rounded-2xl hover:bg-blue-700 shadow-xl shadow-blue-600/20 text-lg flex items-center gap-4 transition-all mx-auto">
-              查看設備流程 <ArrowRight size={22} />
+            <button onClick={() => scrollTo('products')} className="px-12 py-6 bg-blue-600 text-white font-black rounded-2xl hover:bg-blue-700 shadow-xl shadow-blue-600/20 text-lg flex items-center gap-4 transition-all mx-auto">
+              探索產品系列 <ArrowRight size={22} />
             </button>
           </motion.div>
         </div>
@@ -215,15 +244,15 @@ const App: React.FC = () => {
 
         <div className="container mx-auto px-6 overflow-x-auto lg:overflow-visible">
           <div className="flex flex-col lg:flex-row items-center justify-between min-w-[1000px] lg:min-w-0 gap-8 relative">
-            {/* 連接線 (Desktop) */}
+            {/* 連接線 */}
             <div className="hidden lg:block absolute top-1/2 left-0 w-full h-1 bg-gradient-to-r from-blue-100 via-blue-400 to-blue-100 -translate-y-12 z-0 opacity-30"></div>
 
             {[
               { title: "太空包進料", icon: MachineryGraphics.BulkBagStation, step: "01" },
-              { title: "氣動輸送", icon: MachineryGraphics.Venturi, step: "02" },
-              { title: "攪拌混合", icon: MachineryGraphics.ScrewConveyor, step: "03" },
-              { title: "精確計量", icon: MachineryGraphics.MeteringTank, step: "04" },
-              { title: "旋風分離", icon: MachineryGraphics.Cyclone, step: "05" },
+              { title: "物料輸送", icon: MachineryGraphics.Venturi, step: "02" },
+              { title: "核心製程", icon: MachineryGraphics.MeteringTank, step: "03" },
+              { title: "環境集塵", icon: MachineryGraphics.DustCollector, step: "04" },
+              { title: "鋼構整合", icon: MachineryGraphics.StructuralPlatform, step: "05" },
             ].map((node, i) => (
               <motion.div 
                 key={i}
@@ -233,7 +262,7 @@ const App: React.FC = () => {
                 viewport={{ once: true }}
                 className="relative z-10 flex flex-col items-center group"
               >
-                <div className="w-40 h-40 bg-white rounded-3xl border border-blue-100 shadow-sm group-hover:shadow-xl transition-all p-8 mb-6 flex items-center justify-center group-hover:-translate-y-2">
+                <div className="w-40 h-40 bg-white rounded-3xl border border-blue-100 shadow-sm group-hover:shadow-xl transition-all p-8 mb-6 flex items-center justify-center group-hover:-translate-y-2 group-hover:border-blue-300">
                    <node.icon />
                 </div>
                 <div className="text-blue-600 font-black text-xs mb-2 opacity-50 tracking-widest uppercase">Step {node.step}</div>
@@ -246,12 +275,6 @@ const App: React.FC = () => {
               </motion.div>
             ))}
           </div>
-        </div>
-
-        <div className="mt-24 max-w-4xl mx-auto p-10 bg-white/60 backdrop-blur-md rounded-[3rem] border border-blue-100 text-center">
-           <p className="text-slate-600 font-medium leading-relaxed italic">
-             「錕興機械的流程整合系統，確保從原料進入到最終分離的每一階段皆能精確控制，<br className="hidden md:block"/>不僅提升 30% 以上的生產效率，更達到近乎零粉塵的環保作業環境。」
-           </p>
         </div>
       </section>
 
@@ -272,14 +295,14 @@ const App: React.FC = () => {
                     <div className="inline-flex items-center gap-3 px-5 py-2 bg-blue-50 text-blue-600 rounded-full text-[10px] font-black uppercase tracking-widest mb-10 border border-blue-100">
                       {p.cat}
                     </div>
-                    <h3 className="text-4xl lg:text-5xl font-black text-blue-950 mb-6 tracking-tight">{p.title}</h3>
-                    <p className="text-xl text-blue-600 font-bold mb-12 italic opacity-80">{p.subtitle}</p>
+                    <h3 className="text-4xl lg:text-5xl font-black text-blue-950 mb-6 tracking-tight leading-tight">{p.title}</h3>
+                    <p className="text-xl text-blue-600 font-bold mb-8 italic opacity-80">{p.subtitle}</p>
                     
                     <div className="space-y-6">
                        <h4 className="text-[11px] font-black text-slate-400 uppercase tracking-[0.2em] flex items-center gap-4">
                          <span className="w-8 h-[1px] bg-blue-200"></span> 核心優勢 Core Advantages
                        </h4>
-                       <ul className="grid grid-cols-1 gap-4">
+                       <ul className="grid grid-cols-1 md:grid-cols-2 gap-4">
                          {p.advantages.map((adv, i) => (
                            <li key={i} className="flex gap-4 text-slate-600 leading-relaxed font-semibold items-start text-lg">
                              <CheckCircle2 size={24} className="text-blue-500 shrink-0 mt-0.5" /> {adv}
@@ -287,10 +310,19 @@ const App: React.FC = () => {
                          ))}
                        </ul>
                     </div>
+
+                    {(p as any).scenarios && (
+                      <div className="mt-8 p-6 bg-blue-50/50 rounded-2xl border border-blue-100">
+                         <h5 className="text-xs font-black text-blue-800 uppercase tracking-widest mb-2 flex items-center gap-2">
+                           <Leaf size={14} /> 應用情境
+                         </h5>
+                         <p className="text-slate-600 text-sm font-medium">{(p as any).scenarios}</p>
+                      </div>
+                    )}
                   </div>
 
-                  {/* 程式碼生成之設備圖示區 */}
-                  <div className="lg:w-[35%] w-full aspect-square bg-slate-50 rounded-[3rem] border border-blue-50 flex items-center justify-center p-12 group-hover:bg-white transition-colors">
+                  {/* 設備圖示 */}
+                  <div className="lg:w-[35%] w-full aspect-square bg-slate-50 rounded-[3rem] border border-blue-50 flex items-center justify-center p-12 group-hover:bg-white transition-colors relative">
                      <p.Graphic />
                   </div>
                 </div>
@@ -300,7 +332,7 @@ const App: React.FC = () => {
         </div>
       </section>
 
-      {/* 聯絡資訊區塊 */}
+      {/* 聯絡資訊 */}
       <section id="contact" className="py-40 bg-white scroll-mt-24">
         <div className="container mx-auto px-6">
           <div className="max-w-6xl mx-auto bg-blue-950 rounded-[4rem] p-16 md:p-24 flex flex-col lg:flex-row gap-20 items-center shadow-2xl relative overflow-hidden">
@@ -310,39 +342,36 @@ const App: React.FC = () => {
                 <div className="text-blue-400 font-black text-[10px] uppercase tracking-[0.5em] mb-12">Contact Us</div>
                 <h2 className="text-6xl lg:text-7xl font-black mb-16 italic text-white leading-tight tracking-tighter uppercase">啟動您的<br/><span className="text-blue-400">產線升級</span></h2>
                 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-12 text-white">
                    <div className="flex flex-col lg:flex-row items-center lg:items-start gap-6">
-                      <div className="w-14 h-14 bg-white/10 rounded-2xl flex items-center justify-center text-white border border-white/20">
+                      <div className="w-14 h-14 bg-white/10 rounded-2xl flex items-center justify-center border border-white/20">
                         <Phone size={24} />
                       </div>
                       <div className="text-center lg:text-left">
-                        <div className="text-[10px] font-black text-blue-300 uppercase tracking-widest mb-1">聯絡電話 (TEL)</div>
-                        <div className="font-black text-2xl text-white">03-9908036</div>
+                        <div className="text-[10px] font-black text-blue-300 uppercase tracking-widest mb-1">電話 (TEL)</div>
+                        <div className="font-black text-2xl">03-9908036</div>
                       </div>
                    </div>
-
                    <div className="flex flex-col lg:flex-row items-center lg:items-start gap-6">
-                      <div className="w-14 h-14 bg-white/10 rounded-2xl flex items-center justify-center text-white border border-white/20">
+                      <div className="w-14 h-14 bg-white/10 rounded-2xl flex items-center justify-center border border-white/20">
                         <Printer size={24} />
                       </div>
                       <div className="text-center lg:text-left">
-                        <div className="text-[10px] font-black text-blue-300 uppercase tracking-widest mb-1">傳真號碼 (FAX)</div>
-                        <div className="font-black text-2xl text-white">03-9905853</div>
+                        <div className="text-[10px] font-black text-blue-300 uppercase tracking-widest mb-1">傳真 (FAX)</div>
+                        <div className="font-black text-2xl">03-9905853</div>
                       </div>
                    </div>
-
                    <div className="flex flex-col lg:flex-row items-center lg:items-start gap-6">
-                      <div className="w-14 h-14 bg-white/10 rounded-2xl flex items-center justify-center text-white border border-white/20">
+                      <div className="w-14 h-14 bg-white/10 rounded-2xl flex items-center justify-center border border-white/20">
                         <Hash size={24} />
                       </div>
                       <div className="text-center lg:text-left">
-                        <div className="text-[10px] font-black text-blue-300 uppercase tracking-widest mb-1">統一編號 (Tax ID)</div>
-                        <div className="font-black text-2xl text-white">29113377</div>
+                        <div className="text-[10px] font-black text-blue-300 uppercase tracking-widest mb-1">統編 (Tax ID)</div>
+                        <div className="font-black text-2xl">29113377</div>
                       </div>
                    </div>
-
                    <div className="flex flex-col lg:flex-row items-center lg:items-start gap-6">
-                      <div className="w-14 h-14 bg-white/10 rounded-2xl flex items-center justify-center text-white border border-white/20">
+                      <div className="w-14 h-14 bg-white/10 rounded-2xl flex items-center justify-center border border-white/20">
                         <Mail size={24} />
                       </div>
                       <div className="text-center lg:text-left">
@@ -356,9 +385,8 @@ const App: React.FC = () => {
                    <div className="w-14 h-14 bg-white/10 rounded-2xl flex items-center justify-center text-white border border-white/20 shrink-0">
                      <MapPin size={24} />
                    </div>
-                   <div className="text-center lg:text-left text-white/90">
-                      <div className="text-[10px] font-black text-blue-300 uppercase tracking-widest mb-1">公司地址 (Address)</div>
-                      <div className="font-black text-2xl tracking-tighter italic">宜蘭縣五結鄉利工一路二段116巷15號</div>
+                   <div className="text-center lg:text-left text-white/90 font-black text-2xl tracking-tighter italic">
+                      宜蘭縣五結鄉利工一路二段116巷15號
                    </div>
                 </div>
              </div>
@@ -366,15 +394,15 @@ const App: React.FC = () => {
              <div className="lg:w-[30%] w-full relative z-10">
                 <div className="bg-white/5 p-16 rounded-[4rem] text-center border border-white/10 backdrop-blur-sm">
                    <Logo className="w-24 h-24 mx-auto mb-8" />
-                   <h3 className="text-white font-black text-3xl mb-4 tracking-tight">錕興機械</h3>
-                   <p className="text-blue-300 text-xs font-bold uppercase tracking-widest opacity-80">Kun Xing Machinery</p>
+                   <h3 className="text-white font-black text-3xl mb-2 tracking-tight">錕興機械</h3>
+                   <p className="text-blue-300 text-[10px] font-bold uppercase tracking-widest opacity-80">Kun Xing Machinery</p>
                 </div>
              </div>
           </div>
         </div>
       </section>
 
-      <footer className="py-16 border-t border-blue-100 text-center bg-white">
+      <footer className="py-16 text-center bg-white border-t border-blue-50">
          <div className="container mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-8">
             <div className="flex items-center gap-3">
                <Logo className="w-8 h-8" />
@@ -389,7 +417,7 @@ const App: React.FC = () => {
          </div>
       </footer>
 
-      {/* 浮動置頂按鈕 */}
+      {/* 浮動按鈕 */}
       <div className="fixed bottom-10 right-10 z-[60]">
          <button onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })} className="w-16 h-16 bg-blue-600 text-white rounded-2xl shadow-xl flex items-center justify-center hover:bg-blue-700 transition-all active:scale-90">
             <ArrowUp size={28} />
