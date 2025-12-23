@@ -1,94 +1,97 @@
 
 import React, { useState, useEffect } from 'react';
 import { 
-  Settings, Wind, Zap, RotateCw, Filter, Box, Trash2, Gauge, Layers, 
-  X, ArrowRight, ShieldCheck,
-  Activity, Phone, Mail, MapPin, CheckCircle2,
-  Cpu, ArrowUp, Award, Briefcase, Maximize2, ImageIcon, FileDown, LineChart,
-  FileText, MessageSquare, AlertCircle, ImageOff, ClipboardList, Target, HardHat, DollarSign, Puzzle,
-  Search, CheckCircle
+  Settings, Wind, RotateCw, Box, Layers, 
+  ArrowRight, ShieldCheck,
+  Activity, Phone, Mail, CheckCircle2,
+  ArrowUp, LineChart,
+  Target, HardHat, DollarSign, Puzzle,
+  Printer, Hash, MapPin, ChevronRight
 } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
-import pptxgen from "pptxgenjs";
+import { motion } from 'framer-motion';
 
-// --- 安全圖片元件 ---
-const SafeImage = ({ src, alt, className }: { src: string; alt: string; className?: string }) => {
-  const [status, setStatus] = useState<'loading' | 'loaded' | 'error'>('loading');
-  return (
-    <div className={`relative overflow-hidden bg-white rounded-[2rem] border border-slate-200 shadow-inner ${className}`}>
-      {status === 'loading' && (
-        <div className="absolute inset-0 bg-slate-50 animate-pulse flex flex-col items-center justify-center gap-2">
-          <ImageIcon className="text-blue-200" size={40} />
-          <span className="text-[10px] font-black text-blue-300 uppercase tracking-widest">Loading Media</span>
-        </div>
-      )}
-      {status === 'error' && (
-        <div className="absolute inset-0 bg-slate-50 flex flex-col items-center justify-center p-4 text-center">
-          <ImageOff className="text-slate-200 mb-2" size={32} />
-          <span className="text-[10px] text-slate-400 font-bold uppercase tracking-tighter leading-tight">{alt}<br/>IMAGE NOT FOUND</span>
-        </div>
-      )}
-      <img 
-        src={src} 
-        alt={alt} 
-        onLoad={() => setStatus('loaded')}
-        onError={() => setStatus('error')}
-        className={`w-full h-full object-contain p-4 transition-all duration-1000 ${status === 'loaded' ? 'opacity-100 scale-100' : 'opacity-0 scale-95'}`}
-      />
-    </div>
-  );
+// --- 公司標誌 (純 SVG 生成) ---
+const Logo = ({ className = "w-12 h-12" }: { className?: string }) => (
+  <svg className={className} viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M20 4L36 34H4L20 4Z" fill="#2563EB" fillOpacity="0.1" stroke="#2563EB" strokeWidth="2.5" strokeLinejoin="round"/>
+    <path d="M10 18C13 16 17 20 20 18C23 16 27 20 30 18" stroke="#2563EB" strokeWidth="2" strokeLinecap="round"/>
+    <path d="M8 24C11 22 15 26 18 24C21 22 25 26 28 24" stroke="#2563EB" strokeWidth="2" strokeLinecap="round"/>
+    <path d="M6 30C9 28 13 32 16 30C19 28 23 32 26 30" stroke="#2563EB" strokeWidth="2" strokeLinecap="round"/>
+  </svg>
+);
+
+// --- 工業設備 3D 風格 SVG 組件集 ---
+const MachineryGraphics = {
+  BulkBagStation: () => (
+    <svg viewBox="0 0 100 100" className="w-full h-full">
+      <rect x="25" y="10" width="50" height="40" rx="2" fill="#e2e8f0" stroke="#94a3b8" strokeWidth="1" />
+      <path d="M25 50 L10 90 M75 50 L90 90 M25 20 L10 10 M75 20 L90 10" stroke="#64748b" strokeWidth="2" />
+      <path d="M40 50 L40 70 L60 70 L60 50 Z" fill="#cbd5e1" stroke="#94a3b8" />
+      <circle cx="50" cy="80" r="5" fill="#3b82f6" fillOpacity="0.2" stroke="#3b82f6" />
+    </svg>
+  ),
+  Cyclone: () => (
+    <svg viewBox="0 0 100 100" className="w-full h-full">
+      <path d="M30 20 Q50 15 70 20 L70 50 Q50 55 30 50 Z" fill="#e2e8f0" stroke="#94a3b8" />
+      <path d="M30 50 L50 90 L70 50" fill="#cbd5e1" stroke="#94a3b8" />
+      <path d="M45 10 L55 10 L60 20 L40 20 Z" fill="#94a3b8" />
+      <path d="M40 30 Q50 25 60 30" stroke="#3b82f6" strokeWidth="1.5" fill="none" />
+    </svg>
+  ),
+  ScrewConveyor: () => (
+    <svg viewBox="0 0 100 100" className="w-full h-full">
+      <rect x="10" y="45" width="70" height="10" rx="2" fill="#e2e8f0" stroke="#94a3b8" />
+      <rect x="80" y="40" width="10" height="20" rx="1" fill="#475569" />
+      <path d="M20 45 Q25 40 30 45 Q35 50 40 45 Q45 40 50 45" fill="none" stroke="#3b82f6" strokeWidth="1" />
+    </svg>
+  ),
+  MeteringTank: () => (
+    <svg viewBox="0 0 100 100" className="w-full h-full">
+      <rect x="30" y="20" width="40" height="40" rx="4" fill="#f1f5f9" stroke="#94a3b8" />
+      <path d="M30 60 L50 85 L70 60" fill="#e2e8f0" stroke="#94a3b8" />
+      <rect x="35" y="30" width="30" height="2" fill="#3b82f6" opacity="0.3" />
+    </svg>
+  ),
+  Venturi: () => (
+    <svg viewBox="0 0 100 100" className="w-full h-full">
+      <path d="M10 40 L30 40 L45 48 L55 48 L70 40 L90 40 L90 60 L70 60 L55 52 L45 52 L30 60 L10 60 Z" fill="#e2e8f0" stroke="#94a3b8" />
+      <path d="M15 50 L85 50" stroke="#3b82f6" strokeWidth="2" opacity="0.2" strokeDasharray="4,2" />
+    </svg>
+  ),
+  StructuralPlatform: () => (
+    <svg viewBox="0 0 100 100" className="w-full h-full">
+      <rect x="10" y="60" width="80" height="5" fill="#94a3b8" />
+      <path d="M20 65 L20 95 M40 65 L40 95 M60 65 L60 95 M80 65 L80 95" stroke="#64748b" strokeWidth="2" />
+    </svg>
+  )
 };
 
-// --- PDF 產品資料集 (根據 14 頁 PDF 內容) ---
+// --- 產品資料集 ---
 const products = [
   {
     id: "infeed",
     cat: "1. 進料 (Infeed/Unloading)",
     title: "太空包投料站 (Bulk Bag Unloading Station)",
     subtitle: "產線自動化的起點，兼顧效率與環境安全",
-    image: "input_file_4.png",
+    Graphic: MachineryGraphics.BulkBagStation,
     advantages: [
       "提升效率：原料可快速、批量投入，縮短換料時間。",
       "節省人力：單人即可操作，降低人工搬運與高處作業風險。",
       "環境潔淨：結合集塵器與密封結構，有效防止粉塵外洩。",
-      "高度客製：可依物料特性選配拆袋刀、振動器、除鐵器等功能。",
-      "智慧整合：可無縫連結後段自動計量、配料及輸送系統。"
-    ],
-    scenarios: ["食品工業：麵粉、奶粉", "化學產業：粉體、樹脂", "製藥行業：藥品原料", "塑膠工業：塑膠粒", "建材產業：水泥、石灰"]
+      "高度客製：可依物料特性選配拆袋刀、振動器、除鐵器等功能。"
+    ]
   },
   {
     id: "conveying",
     cat: "2. 輸送 (Conveying)",
     title: "DNU/SNU 輸送裝置",
     subtitle: "簡化結構，革新輸送效能",
-    image: "input_file_5.png",
+    Graphic: MachineryGraphics.Venturi,
     advantages: [
-      "無背壓下料：獨特設計可產生微負壓，確保粉粒順利下料，不受輸送背壓影響。",
-      "革新設計：可取代傳統的 AirLock 迴轉閥，提升效能與可靠性。",
-      "極簡可靠：純機械結構簡單，有效節省設備費用，並降低故障率。",
-      "密封防塵：減少氣體及粉塵外洩，維持產線潔淨。",
-      "關鍵規格：DNU 兩段式可支持 2.5 Bar，SNU 輸送量可達 4T~6T/HR。"
-    ]
-  },
-  {
-    id: "rcu",
-    cat: "2. 輸送 (Conveying)",
-    title: "智慧型 RCU 氣體節能控制輸送裝置",
-    subtitle: "精準控制，智慧節能，優化您的輸送成本",
-    image: "input_file_6.png",
-    advantages: [
-      "顯著節能：增配洩漏氣體回收裝置，節省氣體消耗達 5~30%。",
-      "精準控制：可精確控制輸送壓力及流量，確保輸送穩定性。",
-      "模式可選：DILUTE (稀相) 及 DENSE (濃相) 輸送模式可選。",
-      "系統簡化：不須裝設額外排氣管及集塵機，簡化配管費用。"
-    ],
-    table: [
-      { model: "RCU2550", inlet: "1\"", outlet: "2\"" },
-      { model: "RCU4080", inlet: "1-1/2\"", outlet: "3\"" },
-      { model: "RCU50100", inlet: "2\"", outlet: "4\"" },
-      { model: "RCU65125", inlet: "2-1/2\"", outlet: "5\"" },
-      { model: "RCU80150", inlet: "3\"", outlet: "6\"" },
-      { model: "RCU100200", inlet: "4\"", outlet: "8\"" }
+      "無背壓下料：獨特設計可產生微負壓，確保粉粒順利下料。",
+      "革新設計：可取代傳統的 AirLock 迴轉閥，提升效能。",
+      "極簡可靠：純機械結構簡單，有效節省設備費用。",
+      "關鍵規格：DNU 支持至 2.5 Bar，SNU 輸送量可達 4T~6T/HR。"
     ]
   },
   {
@@ -96,26 +99,23 @@ const products = [
     cat: "2. 輸送 (Conveying)",
     title: "螺旋輸送機含攪拌機",
     subtitle: "輸送與攪拌同步完成，實現高效整合",
-    image: "input_file_7.png",
+    Graphic: MachineryGraphics.ScrewConveyor,
     advantages: [
       "功能整合：集物料輸送與攪拌於一體，有效防止物料架橋。",
       "高效緊湊：體積小、效率高，節省廠房空間。",
-      "完全客製：可依據客戶需求客製化長度與容量。",
       "串聯自動化：可連結自動計量、配料系統，實現智慧製造。"
-    ],
-    scenarios: ["食品製造：粉體計量輸送", "化學工廠：顆粒與液體混合", "塑膠產業：塑膠粒輸送", "營建材料：砂石、水泥混合"]
+    ]
   },
   {
     id: "metering",
     cat: "3. 製程 (Processing)",
     title: "計量桶 (Metering Tank)",
     subtitle: "千分之一的精準，是您產品質量的基石",
-    image: "input_file_8.png",
+    Graphic: MachineryGraphics.MeteringTank,
     advantages: [
       "超高精度：桶槽計量精度可達 1/1000。",
       "規格齊全：提供 50L 至 1000L 多種標準規格。",
-      "整合設計：可搭配螺旋輸送機、攪拌器、液位開關。",
-      "客製彈性：可根據需求客製進出料口、液位開關位置。"
+      "整合設計：可搭配螺旋輸送機、攪拌器、液位開關。"
     ]
   },
   {
@@ -123,25 +123,11 @@ const products = [
     cat: "3. 製程 (Processing)",
     title: "旋風分離器 (Cyclone Separator)",
     subtitle: "高效氣固分離，實現物料回收與初步過濾",
-    image: "input_file_9.png",
+    Graphic: MachineryGraphics.Cyclone,
     advantages: [
-      "高效分離：去除 5~10 微米以上的粉塵，作為輸送末端氣粉分離過濾。",
+      "高效分離：去除 5~10 微米以上的粉塵，作為輸送末端氣粉分離。",
       "結構簡單：無活動部件，安裝維護極為方便，使用壽命長。",
-      "耐用可靠：可耐高溫高壓，適合處理高溫煙氣。",
-      "節能降耗：壓損低，運行成本低，是極具經濟效益的選擇。"
-    ]
-  },
-  {
-    id: "dust",
-    cat: "4. 環境 (Environmental)",
-    title: "集塵機 (Dust Collector)",
-    subtitle: "維護產線潔淨與人員安全的核心保障",
-    image: "input_file_10.png",
-    advantages: [
-      "高效過濾：採用多層濾材設計，過濾效率高達 99% 以上。",
-      "自動清灰：具備氣動脈衝反吹系統，自動保持濾材潔淨。",
-      "穩定吸力：搭載高效能風機與渦輪葉片，吸力穩定不衰退。",
-      "維護簡便：採模組化設計，濾材更換快速，組件各自獨立。"
+      "耐用可靠：可耐高溫高壓，適合處理高溫煙氣。"
     ]
   },
   {
@@ -149,19 +135,17 @@ const products = [
     cat: "5. 整合 (Integration)",
     title: "客製化設備鋼構架台",
     subtitle: "穩固的系統基石，量身打造的整合工藝",
-    image: "input_file_11.png",
+    Graphic: MachineryGraphics.StructuralPlatform,
     advantages: [
-      "高度客製：可根據客戶設備需求、廠房空間與承重規格進行設計。",
-      "堅固耐用：採用高強度鋼材製造，確保結構穩定與長期安全。",
-      "安裝快速：採模組化設計，可預製，縮短現場安裝時間。",
-      "完美整合：確保設備安裝位置精準，管線配置合理。"
+      "高度客製：根據客戶設備需求、廠房空間與承重規格設計。",
+      "堅固耐用：採用高強度鋼材製造，確保結構穩定與安全性。",
+      "安裝快速：模組化設計，縮短現場安裝時間。"
     ]
   }
 ];
 
 const App: React.FC = () => {
   const [isScrolled, setIsScrolled] = useState(false);
-  const [isExporting, setIsExporting] = useState(false);
 
   useEffect(() => {
     const handleScroll = () => setIsScrolled(window.scrollY > 50);
@@ -174,264 +158,240 @@ const App: React.FC = () => {
     if (el) el.scrollIntoView({ behavior: 'smooth' });
   };
 
-  const exportCatalogue = async () => {
-    setIsExporting(true);
-    try {
-      const pres = new pptxgen();
-      pres.title = "錕興機械產品型錄 - 智慧輸送系統整合方案";
-      pres.layout = 'LAYOUT_16x9';
-
-      // P1: Cover
-      const s1 = pres.addSlide();
-      s1.background = { color: "020617" };
-      s1.addText("錕興機械股份有限公司", { x: 0.5, y: 1.5, w: "90%", h: 1, fontSize: 48, bold: true, color: "3B82F6", align: 'center' });
-      s1.addText("智慧輸送，系統整合", { x: 0.5, y: 2.6, w: "90%", h: 1, fontSize: 32, color: "FFFFFF", align: 'center', bold: true });
-      s1.addText("從進料到製程的完整粉體物料處理方案", { x: 0.5, y: 3.5, w: "90%", h: 1, fontSize: 18, color: "94A3B8", align: 'center' });
-
-      // P2: Challenges
-      const s2 = pres.addSlide();
-      s2.addText("您的挑戰，我們的專業承諾", { x: 0.5, y: 0.5, w: 9, fontSize: 28, bold: true, color: "1E40AF" });
-      s2.addText("• 效率瓶頸：物料輸送不順、系統頻繁停機\n• 環境安全：粉塵外洩影響工安與健康\n• 成本壓力：能源消耗過高、物料浪費\n• 整合困難：設備規格不一，難以整合成自動化產線", { x: 0.5, y: 1.5, w: 4, fontSize: 14, color: "334155" });
-      s2.addText("我們的理念：以系統思維打造客製化整合方案", { x: 5, y: 1.5, w: 4.5, fontSize: 20, bold: true, color: "1E40AF" });
-      s2.addText("深耕製程需求，提供從設計到施工的一站式解決方案。", { x: 5, y: 2.5, w: 4.5, fontSize: 12, color: "475569" });
-
-      // P3: Journey
-      const s3 = pres.addSlide();
-      s3.addText("一覽無遺的製程之旅", { x: 0.5, y: 0.5, w: 9, fontSize: 24, bold: true, color: "1E40AF", align: 'center' });
-      const steps = ["1.進料", "2.輸送", "3.製程", "4.環境", "5.整合"];
-      steps.forEach((st, i) => {
-        s3.addText(st, { x: 0.5 + i * 1.8, y: 2.5, w: 1.7, h: 1, fontSize: 12, bold: true, color: "FFFFFF", fill: { color: "3B82F6" }, align: 'center' });
-      });
-
-      // P4-11: Products (Matches screenshots)
-      products.forEach(p => {
-        const slide = pres.addSlide();
-        slide.addText(p.title, { x: 0.5, y: 0.4, w: 9, fontSize: 24, bold: true, color: "1E3A8A" });
-        slide.addText(p.subtitle, { x: 0.5, y: 1.0, w: 9, fontSize: 14, italic: true, color: "3B82F6" });
-        slide.addText("核心優勢：\n• " + p.advantages.join("\n• "), { x: 0.5, y: 1.8, w: 5.5, fontSize: 11, color: "475569" });
-        if (p.table) {
-          slide.addTable([['型號', '入氣管徑', '出氣管徑'], ...p.table.map(r => [r.model, r.inlet, r.outlet])], { x: 0.5, y: 4.0, w: 5, fontSize: 9, border: { pt: 1, color: "CBD5E1" } });
-        }
-      });
-
-      // P12: Integration Example
-      const s12 = pres.addSlide();
-      s12.addText("系統整合實例", { x: 0.5, y: 0.5, w: 9, fontSize: 24, bold: true, color: "1E40AF", align: 'center' });
-      s12.addText("從太空包進料到精確計量的完整端到端解決方案", { x: 0.5, y: 1.2, w: 9, fontSize: 14, color: "64748B", align: 'center' });
-
-      // P13: Why Choose Us
-      const s13 = pres.addSlide();
-      s13.addText("為何選擇錕興機械？", { x: 0.5, y: 0.5, w: 9, fontSize: 28, bold: true, color: "1E40AF", align: 'center' });
-      s13.addText("• 系統級專業：深度的製程理解與動態優化\n• 深度客製化能力：量身打造最合適方案\n• 驗證的可靠性：結構堅固，降低維護故障\n• 端到端服務：從諮詢、設計到安裝的全方位支持", { x: 1, y: 1.5, w: 8, fontSize: 16, color: "334155", lineSpacing: 35 });
-
-      // P14: Contact
-      const s14 = pres.addSlide();
-      s14.addText("立即啟動您的產線升級計畫", { x: 0.5, y: 1.5, w: 9, fontSize: 32, bold: true, color: "1E40AF", align: 'center' });
-      s14.addText("聯絡電話：03-9908036\n電子郵件：zack31717@gmail.com\n官方網站：掃描二維碼或點擊連結", { x: 0.5, y: 2.8, w: 9, fontSize: 18, color: "475569", align: 'center' });
-
-      await pres.writeFile({ fileName: "錕興機械_智慧輸送整合方案.pptx" });
-    } catch (err) {
-      console.error(err);
-      alert("下載型錄失敗，請稍後再試。");
-    } finally {
-      setIsExporting(false);
-    }
-  };
-
   return (
-    <div className="min-h-screen bg-[#020617] font-sans text-slate-200 antialiased selection:bg-blue-600/30">
+    <div className="min-h-screen bg-sky-50 font-sans text-slate-800 antialiased">
       {/* 科技感背景 */}
-      <div className="fixed inset-0 pointer-events-none z-0">
-        <div className="absolute top-0 right-0 w-[1000px] h-[1000px] bg-blue-600/5 blur-[180px] rounded-full"></div>
-        <div className="absolute bottom-0 left-0 w-[800px] h-[800px] bg-indigo-900/10 blur-[150px] rounded-full"></div>
-        <div className="absolute inset-0 bg-grid-white/[0.02] bg-[size:60px_60px]"></div>
+      <div className="fixed inset-0 pointer-events-none z-0 opacity-40">
+        <div className="absolute top-0 right-0 w-[800px] h-[800px] bg-blue-200/40 blur-[150px] rounded-full"></div>
+        <div className="absolute bottom-0 left-0 w-[600px] h-[600px] bg-sky-200/40 blur-[120px] rounded-full"></div>
+        <div className="absolute inset-0 bg-grid-slate-200/[0.1] bg-[size:50px_50px]"></div>
       </div>
 
       {/* 導覽列 */}
-      <nav className={`fixed top-0 w-full z-50 transition-all duration-500 ${isScrolled ? 'bg-slate-950/80 backdrop-blur-xl py-3 border-b border-white/5 shadow-2xl' : 'bg-transparent py-6'}`}>
+      <nav className={`fixed top-0 w-full z-50 transition-all duration-500 ${isScrolled ? 'bg-white/90 backdrop-blur-md py-3 border-b border-blue-100 shadow-sm' : 'bg-transparent py-6'}`}>
         <div className="container mx-auto px-6 flex justify-between items-center">
-          <div className="flex items-center gap-3 cursor-pointer group" onClick={() => window.scrollTo({top:0, behavior:'smooth'})}>
-            <div className="w-10 h-10 bg-blue-600 text-white rounded-xl flex items-center justify-center font-black text-2xl shadow-lg shadow-blue-600/20 group-hover:scale-110 transition-transform">K</div>
-            <div className="text-white">
-              <div className="font-black text-xl leading-none tracking-tight">錕興機械</div>
-              <div className="text-[9px] opacity-40 font-bold tracking-[0.2em] uppercase">Kun Xing Machinery</div>
+          <div className="flex items-center gap-4 cursor-pointer group" onClick={() => window.scrollTo({top:0, behavior:'smooth'})}>
+            <Logo className="w-10 h-10" />
+            <div>
+              <div className="font-black text-xl leading-none tracking-tight text-blue-900">錕興機械</div>
+              <div className="text-[9px] opacity-60 font-bold tracking-[0.2em] uppercase text-blue-700">Kun Xing Machinery</div>
             </div>
           </div>
-          <div className="hidden lg:flex items-center gap-10 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">
-             <button onClick={() => scrollTo('challenges')} className="hover:text-blue-400 transition-colors">挑戰與承諾</button>
-             <button onClick={() => scrollTo('journey')} className="hover:text-blue-400 transition-colors">製程流程</button>
-             <button onClick={() => scrollTo('products')} className="hover:text-blue-400 transition-colors">設備系列</button>
-             <button onClick={() => scrollTo('integration')} className="hover:text-blue-400 transition-colors">整合實例</button>
-             <button onClick={() => scrollTo('contact')} className="bg-blue-600 text-white px-8 py-3 rounded-full hover:bg-blue-500 transition-all shadow-xl shadow-blue-600/20 text-xs">聯絡專家</button>
+          <div className="hidden lg:flex items-center gap-10 text-[10px] font-black uppercase tracking-[0.2em] text-slate-500">
+             <button onClick={() => scrollTo('flow')} className="hover:text-blue-600 transition-colors">設備流程</button>
+             <button onClick={() => scrollTo('products')} className="hover:text-blue-600 transition-colors">產品系列</button>
+             <button onClick={() => scrollTo('contact')} className="bg-blue-600 text-white px-8 py-3 rounded-full hover:bg-blue-700 transition-all shadow-md text-xs">聯絡專家</button>
           </div>
         </div>
       </nav>
 
       {/* Hero 區塊 */}
-      <header className="relative min-h-screen flex items-center pt-20 overflow-hidden">
-        <div className="container mx-auto px-6 grid lg:grid-cols-2 gap-16 items-center relative z-10">
+      <header className="relative min-h-[80vh] flex items-center pt-20 overflow-hidden">
+        <div className="container mx-auto px-6 relative z-10 text-center">
           <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8 }}>
-            <div className="inline-flex items-center gap-3 px-6 py-2 bg-blue-600/10 border border-blue-500/20 text-blue-400 text-[10px] font-black uppercase tracking-[0.4em] mb-12 rounded-full shadow-lg">
+            <div className="inline-flex items-center gap-3 px-6 py-2 bg-blue-600/5 border border-blue-500/10 text-blue-600 text-[10px] font-black uppercase tracking-[0.4em] mb-12 rounded-full">
               Smart Conveying & System Integration
             </div>
-            <h1 className="text-7xl lg:text-9xl font-black mb-10 leading-[0.85] tracking-tighter text-white">
+            <h1 className="text-6xl lg:text-9xl font-black mb-10 leading-tight tracking-tighter text-blue-950">
               智慧輸送<br/><span className="text-blue-600">系統整合</span>
             </h1>
-            <p className="text-2xl text-slate-400 mb-12 font-medium leading-relaxed italic border-l-4 border-blue-600 pl-8">
-              錕興機械：從進料到製程的完整粉體物料處理方案
+            <p className="text-2xl text-slate-600 mb-12 font-medium max-w-3xl mx-auto italic">
+              從進料到製程的完整粉體物料處理方案
             </p>
-            <div className="flex flex-wrap gap-6">
-               <button onClick={() => scrollTo('products')} className="px-12 py-6 bg-blue-600 text-white font-black rounded-2xl hover:bg-blue-500 shadow-2xl shadow-blue-600/30 text-lg flex items-center gap-4 transition-all">
-                 探索設備方案 <ArrowRight size={22} />
-               </button>
-               <button 
-                 onClick={exportCatalogue} 
-                 disabled={isExporting} 
-                 className="px-12 py-6 bg-white/5 text-slate-300 font-black rounded-2xl border border-white/10 hover:bg-white/10 transition-all text-lg flex items-center gap-4 group"
-               >
-                 {isExporting ? <div className="w-5 h-5 border-2 border-slate-300 border-t-transparent rounded-full animate-spin" /> : <FileDown size={22} className="group-hover:translate-y-1 transition-transform" />}
-                 下載智慧輸送整合方案型錄
-               </button>
-            </div>
-          </motion.div>
-          <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 1 }}>
-             <SafeImage src="input_file_1.png" alt="智慧輸送系統整線圖" className="aspect-video shadow-3xl border border-white/5 bg-white/5" />
+            <button onClick={() => scrollTo('flow')} className="px-12 py-6 bg-blue-600 text-white font-black rounded-2xl hover:bg-blue-700 shadow-xl shadow-blue-600/20 text-lg flex items-center gap-4 transition-all mx-auto">
+              查看設備流程 <ArrowRight size={22} />
+            </button>
           </motion.div>
         </div>
       </header>
 
-      {/* 產品展示區 */}
-      <section id="products" className="py-40 scroll-mt-24">
-        <div className="container mx-auto px-6">
-          {products.map((p, idx) => (
-            <div key={p.id} className={`flex flex-col lg:flex-row gap-24 items-center mb-48 ${idx % 2 === 1 ? 'lg:flex-row-reverse' : ''}`}>
-              <motion.div 
-                initial={{ opacity: 0, x: idx % 2 === 1 ? 50 : -50 }}
-                whileInView={{ opacity: 1, x: 0 }}
-                viewport={{ once: true }}
-                className="lg:w-1/2"
-              >
-                <div className="inline-flex items-center gap-3 px-5 py-2 bg-blue-600/10 text-blue-400 rounded-full text-[10px] font-black uppercase tracking-widest mb-10 border border-blue-500/10">
-                  {p.cat}
-                </div>
-                <h3 className="text-5xl lg:text-6xl font-black text-white mb-6 tracking-tight">{p.title}</h3>
-                <p className="text-2xl text-blue-400 font-bold mb-12 italic opacity-80">{p.subtitle}</p>
-                
-                <div className="mb-12">
-                   <h4 className="text-[11px] font-black text-slate-500 uppercase tracking-[0.2em] mb-8 flex items-center gap-4">
-                     <span className="w-8 h-[1px] bg-slate-800"></span> 核心優勢 Core Advantages
-                   </h4>
-                   <ul className="grid grid-cols-1 gap-y-6">
-                     {p.advantages.map((adv, i) => (
-                       <li key={i} className="flex gap-6 text-slate-300 leading-relaxed font-semibold items-start text-lg">
-                         <CheckCircle2 size={24} className="text-blue-500 shrink-0 mt-0.5" /> {adv}
-                       </li>
-                     ))}
-                   </ul>
-                </div>
+      {/* 設備流程視覺化區塊 */}
+      <section id="flow" className="py-32 scroll-mt-24 relative z-10">
+        <div className="container mx-auto px-6 text-center mb-24">
+          <div className="text-blue-600 font-black text-[10px] uppercase tracking-[0.5em] mb-6">Equipment Flow</div>
+          <h2 className="text-5xl font-black text-blue-950 mb-8 tracking-tighter">智慧生產流程圖</h2>
+          <div className="h-1.5 w-32 bg-blue-600 mx-auto rounded-full"></div>
+        </div>
 
-                {p.table && (
-                   <div className="mb-12 overflow-hidden rounded-2xl border border-white/5 bg-white/5">
-                      <table className="w-full text-left text-sm">
-                         <thead className="bg-slate-800/50 text-slate-400 uppercase text-[10px] font-black tracking-widest">
-                            <tr>
-                               <th className="px-6 py-4">型號 (Model)</th>
-                               <th className="px-6 py-4">入氣管徑</th>
-                               <th className="px-6 py-4">出氣管徑</th>
-                            </tr>
-                         </thead>
-                         <tbody className="divide-y divide-white/5">
-                            {p.table.map((row, i) => (
-                               <tr key={i} className="hover:bg-white/5 transition-colors">
-                                  <td className="px-6 py-4 font-black text-blue-400">{row.model}</td>
-                                  <td className="px-6 py-4 text-slate-300">{row.inlet}</td>
-                                  <td className="px-6 py-4 text-slate-300">{row.outlet}</td>
-                               </tr>
-                            ))}
-                         </tbody>
-                      </table>
-                   </div>
+        <div className="container mx-auto px-6 overflow-x-auto lg:overflow-visible">
+          <div className="flex flex-col lg:flex-row items-center justify-between min-w-[1000px] lg:min-w-0 gap-8 relative">
+            {/* 連接線 (Desktop) */}
+            <div className="hidden lg:block absolute top-1/2 left-0 w-full h-1 bg-gradient-to-r from-blue-100 via-blue-400 to-blue-100 -translate-y-12 z-0 opacity-30"></div>
+
+            {[
+              { title: "太空包進料", icon: MachineryGraphics.BulkBagStation, step: "01" },
+              { title: "氣動輸送", icon: MachineryGraphics.Venturi, step: "02" },
+              { title: "攪拌混合", icon: MachineryGraphics.ScrewConveyor, step: "03" },
+              { title: "精確計量", icon: MachineryGraphics.MeteringTank, step: "04" },
+              { title: "旋風分離", icon: MachineryGraphics.Cyclone, step: "05" },
+            ].map((node, i) => (
+              <motion.div 
+                key={i}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ delay: i * 0.1 }}
+                viewport={{ once: true }}
+                className="relative z-10 flex flex-col items-center group"
+              >
+                <div className="w-40 h-40 bg-white rounded-3xl border border-blue-100 shadow-sm group-hover:shadow-xl transition-all p-8 mb-6 flex items-center justify-center group-hover:-translate-y-2">
+                   <node.icon />
+                </div>
+                <div className="text-blue-600 font-black text-xs mb-2 opacity-50 tracking-widest uppercase">Step {node.step}</div>
+                <h3 className="text-xl font-black text-blue-900 mb-4">{node.title}</h3>
+                {i < 4 && (
+                  <div className="lg:hidden">
+                    <ChevronRight className="text-blue-300 mb-6" size={32} />
+                  </div>
                 )}
               </motion.div>
+            ))}
+          </div>
+        </div>
+
+        <div className="mt-24 max-w-4xl mx-auto p-10 bg-white/60 backdrop-blur-md rounded-[3rem] border border-blue-100 text-center">
+           <p className="text-slate-600 font-medium leading-relaxed italic">
+             「錕興機械的流程整合系統，確保從原料進入到最終分離的每一階段皆能精確控制，<br className="hidden md:block"/>不僅提升 30% 以上的生產效率，更達到近乎零粉塵的環保作業環境。」
+           </p>
+        </div>
+      </section>
+
+      {/* 產品展示區 */}
+      <section id="products" className="py-40 bg-white/40 backdrop-blur-sm scroll-mt-24">
+        <div className="container mx-auto px-6">
+          <div className="grid grid-cols-1 gap-20 max-w-6xl mx-auto">
+            {products.map((p) => (
               <motion.div 
-                initial={{ opacity: 0, scale: 0.9 }}
-                whileInView={{ opacity: 1, scale: 1 }}
+                key={p.id} 
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
-                className="lg:w-1/2 w-full"
+                className="bg-white p-10 lg:p-16 rounded-[4rem] border border-blue-50 shadow-sm hover:shadow-xl transition-all relative overflow-hidden group"
               >
-                <SafeImage src={p.image} alt={p.title} className="aspect-[4/3] shadow-4xl p-10 bg-white" />
+                <div className="relative z-10 flex flex-col lg:flex-row gap-16 items-center">
+                  <div className="flex-1">
+                    <div className="inline-flex items-center gap-3 px-5 py-2 bg-blue-50 text-blue-600 rounded-full text-[10px] font-black uppercase tracking-widest mb-10 border border-blue-100">
+                      {p.cat}
+                    </div>
+                    <h3 className="text-4xl lg:text-5xl font-black text-blue-950 mb-6 tracking-tight">{p.title}</h3>
+                    <p className="text-xl text-blue-600 font-bold mb-12 italic opacity-80">{p.subtitle}</p>
+                    
+                    <div className="space-y-6">
+                       <h4 className="text-[11px] font-black text-slate-400 uppercase tracking-[0.2em] flex items-center gap-4">
+                         <span className="w-8 h-[1px] bg-blue-200"></span> 核心優勢 Core Advantages
+                       </h4>
+                       <ul className="grid grid-cols-1 gap-4">
+                         {p.advantages.map((adv, i) => (
+                           <li key={i} className="flex gap-4 text-slate-600 leading-relaxed font-semibold items-start text-lg">
+                             <CheckCircle2 size={24} className="text-blue-500 shrink-0 mt-0.5" /> {adv}
+                           </li>
+                         ))}
+                       </ul>
+                    </div>
+                  </div>
+
+                  {/* 程式碼生成之設備圖示區 */}
+                  <div className="lg:w-[35%] w-full aspect-square bg-slate-50 rounded-[3rem] border border-blue-50 flex items-center justify-center p-12 group-hover:bg-white transition-colors">
+                     <p.Graphic />
+                  </div>
+                </div>
               </motion.div>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
       </section>
 
-      {/* 整合案例 */}
-      <section id="integration" className="py-48 bg-slate-900/50 scroll-mt-24">
-        <div className="container mx-auto px-6 text-center mb-32">
-          <h2 className="text-6xl font-black text-white mb-8 tracking-tighter">系統整合實例</h2>
-          <p className="text-2xl text-slate-500 max-w-4xl mx-auto font-medium leading-relaxed italic">
-            「整合太空包進料、DNU輸送及精確計量」的示範案例。
-          </p>
-        </div>
+      {/* 聯絡資訊區塊 */}
+      <section id="contact" className="py-40 bg-white scroll-mt-24">
         <div className="container mx-auto px-6">
-           <div className="max-w-7xl mx-auto p-6 bg-white rounded-[4rem] shadow-5xl border border-slate-200">
-              <img src="input_file_12.png" alt="整線整合實例" className="w-full h-auto rounded-[3.5rem]" />
-           </div>
-        </div>
-      </section>
-
-      {/* 聯絡資訊 */}
-      <section id="contact" className="py-48 bg-slate-900/50 scroll-mt-24">
-        <div className="container mx-auto px-6">
-          <div className="max-w-7xl mx-auto bg-gradient-to-br from-slate-900 to-slate-950 rounded-[5rem] p-16 md:p-32 flex flex-col lg:flex-row gap-24 items-center border border-white/5 shadow-5xl relative overflow-hidden">
-             <div className="flex-1 relative z-10">
-                <h2 className="text-7xl lg:text-8xl font-black mb-12 italic text-white leading-[0.9] tracking-tighter">啟動您的<br/><span className="text-blue-600">產線升級計畫</span></h2>
-                <div className="space-y-12">
-                   <div className="flex items-center gap-12 group">
-                      <div className="w-16 h-16 bg-blue-600/10 rounded-3xl flex items-center justify-center text-blue-500 border border-blue-500/10">
-                        <Phone size={32} />
+          <div className="max-w-6xl mx-auto bg-blue-950 rounded-[4rem] p-16 md:p-24 flex flex-col lg:flex-row gap-20 items-center shadow-2xl relative overflow-hidden">
+             <div className="absolute top-0 right-0 w-64 h-64 bg-blue-600/10 blur-[100px] rounded-full"></div>
+             
+             <div className="flex-1 relative z-10 text-center lg:text-left">
+                <div className="text-blue-400 font-black text-[10px] uppercase tracking-[0.5em] mb-12">Contact Us</div>
+                <h2 className="text-6xl lg:text-7xl font-black mb-16 italic text-white leading-tight tracking-tighter uppercase">啟動您的<br/><span className="text-blue-400">產線升級</span></h2>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
+                   <div className="flex flex-col lg:flex-row items-center lg:items-start gap-6">
+                      <div className="w-14 h-14 bg-white/10 rounded-2xl flex items-center justify-center text-white border border-white/20">
+                        <Phone size={24} />
                       </div>
-                      <div>
-                        <div className="text-[10px] font-black text-slate-600 uppercase tracking-widest mb-1">聯絡電話</div>
-                        <div className="font-black text-3xl text-white tracking-tighter">03-9908036</div>
+                      <div className="text-center lg:text-left">
+                        <div className="text-[10px] font-black text-blue-300 uppercase tracking-widest mb-1">聯絡電話 (TEL)</div>
+                        <div className="font-black text-2xl text-white">03-9908036</div>
                       </div>
                    </div>
-                   <div className="flex items-center gap-12 group">
-                      <div className="w-16 h-16 bg-blue-600/10 rounded-3xl flex items-center justify-center text-blue-500 border border-blue-500/10">
-                        <Mail size={32} />
+
+                   <div className="flex flex-col lg:flex-row items-center lg:items-start gap-6">
+                      <div className="w-14 h-14 bg-white/10 rounded-2xl flex items-center justify-center text-white border border-white/20">
+                        <Printer size={24} />
                       </div>
-                      <div>
-                        <div className="text-[10px] font-black text-slate-600 uppercase tracking-widest mb-1">電子郵件</div>
-                        <div className="font-black text-3xl text-blue-400 italic tracking-tight">zack31717@gmail.com</div>
+                      <div className="text-center lg:text-left">
+                        <div className="text-[10px] font-black text-blue-300 uppercase tracking-widest mb-1">傳真號碼 (FAX)</div>
+                        <div className="font-black text-2xl text-white">03-9905853</div>
                       </div>
+                   </div>
+
+                   <div className="flex flex-col lg:flex-row items-center lg:items-start gap-6">
+                      <div className="w-14 h-14 bg-white/10 rounded-2xl flex items-center justify-center text-white border border-white/20">
+                        <Hash size={24} />
+                      </div>
+                      <div className="text-center lg:text-left">
+                        <div className="text-[10px] font-black text-blue-300 uppercase tracking-widest mb-1">統一編號 (Tax ID)</div>
+                        <div className="font-black text-2xl text-white">29113377</div>
+                      </div>
+                   </div>
+
+                   <div className="flex flex-col lg:flex-row items-center lg:items-start gap-6">
+                      <div className="w-14 h-14 bg-white/10 rounded-2xl flex items-center justify-center text-white border border-white/20">
+                        <Mail size={24} />
+                      </div>
+                      <div className="text-center lg:text-left">
+                        <div className="text-[10px] font-black text-blue-300 uppercase tracking-widest mb-1">電子郵件</div>
+                        <div className="font-black text-xl text-blue-200 italic">zack31717@gmail.com</div>
+                      </div>
+                   </div>
+                </div>
+
+                <div className="mt-16 pt-10 border-t border-white/10 flex flex-col lg:flex-row items-center lg:items-start gap-6">
+                   <div className="w-14 h-14 bg-white/10 rounded-2xl flex items-center justify-center text-white border border-white/20 shrink-0">
+                     <MapPin size={24} />
+                   </div>
+                   <div className="text-center lg:text-left text-white/90">
+                      <div className="text-[10px] font-black text-blue-300 uppercase tracking-widest mb-1">公司地址 (Address)</div>
+                      <div className="font-black text-2xl tracking-tighter italic">宜蘭縣五結鄉利工一路二段116巷15號</div>
                    </div>
                 </div>
              </div>
-             <div className="lg:w-[35%] w-full relative z-10">
-                <div className="bg-white p-16 rounded-[4.5rem] text-center shadow-6xl border border-slate-200">
-                   <img src="input_file_14.png" className="w-full h-auto mx-auto mb-10" alt="QR Code" />
-                   <div className="text-xl font-black text-blue-900 tracking-tight">掃描瀏覽官方網站</div>
+
+             <div className="lg:w-[30%] w-full relative z-10">
+                <div className="bg-white/5 p-16 rounded-[4rem] text-center border border-white/10 backdrop-blur-sm">
+                   <Logo className="w-24 h-24 mx-auto mb-8" />
+                   <h3 className="text-white font-black text-3xl mb-4 tracking-tight">錕興機械</h3>
+                   <p className="text-blue-300 text-xs font-bold uppercase tracking-widest opacity-80">Kun Xing Machinery</p>
                 </div>
              </div>
           </div>
         </div>
       </section>
 
-      <footer className="py-24 border-t border-white/5 text-center bg-slate-950">
-         <p className="text-slate-800 font-black uppercase tracking-[0.6em] text-[9px]">© 2024 KUN XING MACHINERY CO., LTD. All rights reserved.</p>
+      <footer className="py-16 border-t border-blue-100 text-center bg-white">
+         <div className="container mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-8">
+            <div className="flex items-center gap-3">
+               <Logo className="w-8 h-8" />
+               <div className="text-left">
+                  <div className="font-black text-sm text-blue-900 leading-none">錕興機械</div>
+                  <div className="text-[7px] text-blue-400 font-bold uppercase tracking-widest">Kun Xing Machinery</div>
+               </div>
+            </div>
+            <div className="text-[9px] text-slate-400 font-black uppercase tracking-[0.6em]">
+              © 2024 KUN XING MACHINERY CO., LTD. All rights reserved.
+            </div>
+         </div>
       </footer>
 
-      {/* 浮動按鈕 */}
-      <div className="fixed bottom-10 right-10 z-[60] flex flex-col gap-6">
-         <button 
-           onClick={exportCatalogue} 
-           className="w-16 h-16 bg-slate-900/90 backdrop-blur-xl border border-white/10 text-blue-400 rounded-2xl shadow-4xl flex items-center justify-center hover:bg-blue-600 hover:text-white transition-all active:scale-90 group"
-         >
-            <FileDown size={28} />
-            <span className="absolute right-full mr-6 px-4 py-2 bg-blue-600 text-white text-[10px] font-black uppercase rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap tracking-widest">下載數位型錄</span>
-         </button>
-         <button onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })} className="w-16 h-16 bg-blue-600 text-white rounded-2xl shadow-4xl flex items-center justify-center hover:bg-blue-500 transition-all active:scale-90 shadow-blue-600/40">
+      {/* 浮動置頂按鈕 */}
+      <div className="fixed bottom-10 right-10 z-[60]">
+         <button onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })} className="w-16 h-16 bg-blue-600 text-white rounded-2xl shadow-xl flex items-center justify-center hover:bg-blue-700 transition-all active:scale-90">
             <ArrowUp size={28} />
          </button>
       </div>
