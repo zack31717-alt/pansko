@@ -8,7 +8,8 @@ import {
   Target, HardHat, DollarSign, Puzzle,
   Printer, Hash, MapPin, ChevronRight, Leaf,
   Upload, Image as ImageIcon, X, Gauge,
-  Construction, Layout, Filter, Zap, ArrowRightLeft, MoveRight, Scale, Link, Terminal, Cpu, BarChart3
+  Construction, Layout, Filter, Zap, ArrowRightLeft, MoveRight, Scale, Link, Terminal, Cpu, BarChart3,
+  Copy, Save, Database, Download, Code
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -150,67 +151,37 @@ const MachineryGraphics = {
   )
 };
 
+// --- 產品介面定義 ---
+interface Product {
+  id: string;
+  cat: string;
+  title: string;
+  subtitle: string;
+  Graphic: React.FC;
+  advantages: string[];
+  image?: string; // 預留給 Base64 硬編碼圖片
+}
+
 // --- 流程步驟資料 ---
 const processSteps = [
-  {
-    id: "step-infeed",
-    title: "高效進料",
-    target: "infeed",
-    icon: <Upload size={24} />,
-    desc: "太空包與手動多元投料系統",
-    color: "bg-blue-500"
-  },
-  {
-    id: "step-convey",
-    title: "氣動輸送",
-    target: "conveying_dnu",
-    icon: <RotateCw size={24} />,
-    desc: "密閉式低背壓長距離輸送",
-    color: "bg-sky-500"
-  },
-  {
-    id: "step-mix",
-    title: "均化攪拌",
-    target: "mixer",
-    icon: <Layers size={24} />,
-    desc: "螺旋同步輸送與物料均化",
-    color: "bg-indigo-500"
-  },
-  {
-    id: "step-meter",
-    title: "精密計量",
-    target: "metering",
-    icon: <Gauge size={24} />,
-    desc: "高精度配比與流量監測",
-    color: "bg-blue-600"
-  },
-  {
-    id: "step-clean",
-    title: "端點環保",
-    target: "dust",
-    icon: <Wind size={24} />,
-    desc: "旋風分離與自動脈衝集塵",
-    color: "bg-cyan-600"
-  },
-  {
-    id: "step-control",
-    title: "系統中控",
-    target: "control_panel",
-    icon: <Terminal size={24} />,
-    desc: "PLC 邏輯控制與人機協作",
-    color: "bg-blue-900"
-  }
+  { id: "step-infeed", title: "高效進料", target: "infeed", icon: <Upload size={24} />, desc: "太空包與手動多元投料系統", color: "bg-blue-500" },
+  { id: "step-convey", title: "氣動輸送", target: "conveying_dnu", icon: <RotateCw size={24} />, desc: "密閉式低背壓長距離輸送", color: "bg-sky-500" },
+  { id: "step-mix", title: "均化攪拌", target: "mixer", icon: <Layers size={24} />, desc: "螺旋同步輸送與物料均化", color: "bg-indigo-500" },
+  { id: "step-meter", title: "精密計量", target: "metering", icon: <Gauge size={24} />, desc: "高精度配比與流量監測", color: "bg-blue-600" },
+  { id: "step-clean", title: "端點環保", target: "dust", icon: <Wind size={24} />, desc: "旋風分離與自動脈衝集塵", color: "bg-cyan-600" },
+  { id: "step-control", title: "系統中控", target: "control_panel", icon: <Terminal size={24} />, desc: "PLC 邏輯控制與人機協作", color: "bg-blue-900" }
 ];
 
 // --- 產品資料集 (17 項) ---
-const initialProducts = [
+const initialProducts: Product[] = [
   {
     id: "infeed",
     cat: "1. 進料 (Infeed)",
     title: "太空包投料站",
     subtitle: "Bulk Bag Unloading Station",
     Graphic: MachineryGraphics.BulkBagStation,
-    advantages: ["單人操作節省人力", "全密封防止粉塵外洩", "選配振動器確保流動", "支援多種物料規格"]
+    advantages: ["單人操作節省人力", "全密封防止粉塵外洩", "選配振動器確保流動", "支援多種物料規格"],
+    image: "" // 未來貼上 Base64
   },
   {
     id: "hopper",
@@ -345,20 +316,42 @@ const initialProducts = [
 const App: React.FC = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [productImages, setProductImages] = useState<Record<string, string>>({});
+  const [showExportModal, setShowExportModal] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [activeUploadId, setActiveUploadId] = useState<string | null>(null);
 
+  // 初始化：從 LocalStorage 載入已儲存圖片
   useEffect(() => {
+    const saved = localStorage.getItem('kx_product_images');
+    if (saved) {
+      try {
+        setProductImages(JSON.parse(saved));
+      } catch (e) {
+        console.error("Failed to load saved images");
+      }
+    }
+    
     const handleScroll = () => setIsScrolled(window.scrollY > 50);
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
+  // 當圖片更新時，儲存至 LocalStorage
+  useEffect(() => {
+    if (Object.keys(productImages).length > 0) {
+      localStorage.setItem('kx_product_images', JSON.stringify(productImages));
+    }
+  }, [productImages]);
+
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file && activeUploadId) {
-      const imageUrl = URL.createObjectURL(file);
-      setProductImages(prev => ({ ...prev, [activeUploadId]: imageUrl }));
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        const base64String = reader.result as string;
+        setProductImages(prev => ({ ...prev, [activeUploadId]: base64String }));
+      };
+      reader.readAsDataURL(file);
     }
   };
 
@@ -372,6 +365,7 @@ const App: React.FC = () => {
     setProductImages(prev => {
       const next = { ...prev };
       delete next[id];
+      localStorage.setItem('kx_product_images', JSON.stringify(next));
       return next;
     });
   };
@@ -379,6 +373,15 @@ const App: React.FC = () => {
   const scrollTo = (id: string) => {
     const el = document.getElementById(id);
     if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  };
+
+  // 生成新的 initialProducts 程式碼字串
+  const generateExportCode = () => {
+    const updatedProducts = initialProducts.map(p => ({
+      ...p,
+      image: productImages[p.id] || p.image || ""
+    }));
+    return `const initialProducts: Product[] = ${JSON.stringify(updatedProducts, null, 2)};`;
   };
 
   return (
@@ -499,81 +502,86 @@ const App: React.FC = () => {
           </div>
 
           <div className="grid grid-cols-1 gap-16 max-w-6xl mx-auto">
-            {initialProducts.map((p) => (
-              <motion.div 
-                key={p.id} 
-                id={p.id}
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, margin: "-100px" }}
-                className="bg-white p-10 lg:p-16 rounded-[4rem] border border-blue-50/50 shadow-sm hover:shadow-2xl transition-all relative group"
-              >
-                <div className="relative z-10 flex flex-col lg:flex-row gap-14 items-center">
-                  <div className="flex-1">
-                    <div className="inline-flex items-center gap-3 px-5 py-2 bg-blue-50 text-blue-600 rounded-full text-[10px] font-black uppercase tracking-widest mb-10 border border-blue-100">
-                      {p.cat}
+            {initialProducts.map((p) => {
+              const currentImage = productImages[p.id] || p.image;
+              return (
+                <motion.div 
+                  key={p.id} 
+                  id={p.id}
+                  initial={{ opacity: 0, y: 30 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true, margin: "-100px" }}
+                  className="bg-white p-10 lg:p-16 rounded-[4rem] border border-blue-50/50 shadow-sm hover:shadow-2xl transition-all relative group"
+                >
+                  <div className="relative z-10 flex flex-col lg:flex-row gap-14 items-center">
+                    <div className="flex-1">
+                      <div className="inline-flex items-center gap-3 px-5 py-2 bg-blue-50 text-blue-600 rounded-full text-[10px] font-black uppercase tracking-widest mb-10 border border-blue-100">
+                        {p.cat}
+                      </div>
+                      <h3 className="text-4xl lg:text-5xl font-black text-blue-950 mb-6 tracking-tight leading-tight">{p.title}</h3>
+                      <p className="text-xl text-blue-600/60 font-bold mb-10 italic">{p.subtitle}</p>
+                      
+                      <ul className="grid grid-cols-1 md:grid-cols-2 gap-y-6 gap-x-12 mb-10">
+                        {p.advantages.map((adv, i) => (
+                          <li key={i} className="flex gap-4 text-slate-600 font-semibold text-lg items-start">
+                            <CheckCircle2 size={24} className="text-blue-500 shrink-0 mt-1" /> 
+                            <span className="leading-snug">{adv}</span>
+                          </li>
+                        ))}
+                      </ul>
                     </div>
-                    <h3 className="text-4xl lg:text-5xl font-black text-blue-950 mb-6 tracking-tight leading-tight">{p.title}</h3>
-                    <p className="text-xl text-blue-600/60 font-bold mb-10 italic">{p.subtitle}</p>
-                    
-                    <ul className="grid grid-cols-1 md:grid-cols-2 gap-y-6 gap-x-12 mb-10">
-                      {p.advantages.map((adv, i) => (
-                        <li key={i} className="flex gap-4 text-slate-600 font-semibold text-lg items-start">
-                          <CheckCircle2 size={24} className="text-blue-500 shrink-0 mt-1" /> 
-                          <span className="leading-snug">{adv}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
 
-                  {/* 影像展示區 */}
-                  <div 
-                    onClick={() => triggerUpload(p.id)}
-                    className="lg:w-[42%] w-full aspect-square rounded-[3.5rem] bg-slate-50 border-2 border-dashed border-blue-100 flex items-center justify-center p-10 transition-all relative overflow-hidden cursor-pointer hover:bg-blue-50/50 group/img shadow-inner"
-                  >
-                    <AnimatePresence mode="wait">
-                      {productImages[p.id] ? (
-                        <motion.div 
-                          key="image"
-                          initial={{ opacity: 0, scale: 0.95 }}
-                          animate={{ opacity: 1, scale: 1 }}
-                          exit={{ opacity: 0, scale: 0.95 }}
-                          className="w-full h-full relative flex items-center justify-center"
-                        >
-                          <img 
-                            src={productImages[p.id]} 
-                            alt={p.title} 
-                            className="max-w-full max-h-full object-contain drop-shadow-[0_30px_60px_rgba(0,0,0,0.12)]"
-                          />
-                          <button 
-                            onClick={(e) => removeImage(p.id, e)}
-                            className="absolute top-2 right-2 bg-red-500 text-white p-3 rounded-2xl shadow-xl opacity-0 group-hover/img:opacity-100 transition-opacity hover:bg-red-600"
+                    {/* 影像展示區 */}
+                    <div 
+                      onClick={() => triggerUpload(p.id)}
+                      className="lg:w-[42%] w-full aspect-square rounded-[3.5rem] bg-slate-50 border-2 border-dashed border-blue-100 flex items-center justify-center p-10 transition-all relative overflow-hidden cursor-pointer hover:bg-blue-50/50 group/img shadow-inner"
+                    >
+                      <AnimatePresence mode="wait">
+                        {currentImage ? (
+                          <motion.div 
+                            key="image"
+                            initial={{ opacity: 0, scale: 0.95 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            exit={{ opacity: 0, scale: 0.95 }}
+                            className="w-full h-full relative flex items-center justify-center"
                           >
-                            <X size={20} />
-                          </button>
-                        </motion.div>
-                      ) : (
-                        <motion.div 
-                          key="placeholder"
-                          initial={{ opacity: 0 }}
-                          animate={{ opacity: 1 }}
-                          className="text-center w-full"
-                        >
-                          <div className="mb-10 mx-auto w-32 h-32 transform group-hover/img:scale-110 transition-transform duration-500">
-                            <p.Graphic />
-                          </div>
-                          <div className="flex flex-col items-center gap-3 text-blue-400">
-                            <Upload size={36} />
-                            <span className="text-xs font-black uppercase tracking-widest">點擊上傳設備照片</span>
-                            <span className="text-[10px] opacity-40 font-bold uppercase tracking-[0.2em]">PNG / JPG Only</span>
-                          </div>
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
+                            <img 
+                              src={currentImage} 
+                              alt={p.title} 
+                              className="max-w-full max-h-full object-contain drop-shadow-[0_30px_60px_rgba(0,0,0,0.12)]"
+                            />
+                            <div className="absolute top-2 right-2 flex gap-2 opacity-0 group-hover/img:opacity-100 transition-opacity">
+                              <button 
+                                onClick={(e) => removeImage(p.id, e)}
+                                className="bg-red-500 text-white p-3 rounded-2xl shadow-xl hover:bg-red-600"
+                              >
+                                <X size={20} />
+                              </button>
+                            </div>
+                          </motion.div>
+                        ) : (
+                          <motion.div 
+                            key="placeholder"
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            className="text-center w-full"
+                          >
+                            <div className="mb-10 mx-auto w-32 h-32 transform group-hover/img:scale-110 transition-transform duration-500">
+                              <p.Graphic />
+                            </div>
+                            <div className="flex flex-col items-center gap-3 text-blue-400">
+                              <Upload size={36} />
+                              <span className="text-xs font-black uppercase tracking-widest">點擊上傳設備照片</span>
+                              <span className="text-[10px] opacity-40 font-bold uppercase tracking-[0.2em]">PNG / JPG Only</span>
+                            </div>
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
+                    </div>
                   </div>
-                </div>
-              </motion.div>
-            ))}
+                </motion.div>
+              );
+            })}
           </div>
         </div>
       </section>
@@ -602,6 +610,20 @@ const App: React.FC = () => {
              </div>
           </div>
           
+          {/* 管理工具按鈕 */}
+          <div className="mb-20">
+            <button 
+              onClick={() => setShowExportModal(true)}
+              className="px-8 py-4 bg-white/10 border border-white/20 rounded-2xl flex items-center gap-3 mx-auto hover:bg-white/20 transition-all group"
+            >
+              <Database size={20} className="text-blue-400 group-hover:scale-110 transition-transform" />
+              <span className="text-xs font-black uppercase tracking-widest">💾 導出更新代碼 (Export Code)</span>
+            </button>
+            <p className="mt-4 text-[10px] text-white/40 font-bold uppercase tracking-widest">
+              點擊後複製代碼並回傳給 AI，即可永久保存目前上傳的圖片
+            </p>
+          </div>
+
           <div className="pt-12 border-t border-white/10 flex flex-col md:flex-row justify-between items-center gap-8">
             <div className="flex items-center gap-4 text-xs font-black uppercase tracking-widest text-white/40">
               <Hash size={16} className="text-blue-500" /> 統一編號: 29113377
@@ -612,6 +634,49 @@ const App: React.FC = () => {
           </div>
         </div>
       </footer>
+
+      {/* 導出代碼彈窗 */}
+      <AnimatePresence>
+        {showExportModal && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-blue-950/80 backdrop-blur-md">
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.9, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.9, y: 20 }}
+              className="bg-white w-full max-w-4xl max-h-[80vh] rounded-[3rem] shadow-2xl flex flex-col overflow-hidden"
+            >
+              <div className="p-8 border-b flex justify-between items-center bg-slate-50">
+                <div className="flex items-center gap-3">
+                  <Code className="text-blue-600" />
+                  <h3 className="text-xl font-black text-blue-950 uppercase tracking-tighter">系統資料同步工具</h3>
+                </div>
+                <button onClick={() => setShowExportModal(false)} className="p-2 hover:bg-slate-200 rounded-full transition-colors"><X /></button>
+              </div>
+              <div className="p-8 flex-1 overflow-auto">
+                <p className="text-sm text-slate-500 font-bold mb-6 flex items-center gap-2 italic">
+                  <CheckCircle2 size={16} className="text-green-500" /> 請複製下方 JSON 代碼，並在對話框中貼上給我，我將為您永久更新 initialProducts 陣列。
+                </p>
+                <div className="relative group">
+                  <textarea 
+                    readOnly 
+                    value={generateExportCode()}
+                    className="w-full h-[400px] p-6 bg-slate-900 text-blue-300 font-mono text-xs rounded-3xl border-0 focus:ring-0 resize-none selection:bg-blue-500/30"
+                  />
+                  <button 
+                    onClick={() => {
+                      navigator.clipboard.writeText(generateExportCode());
+                      alert('代碼已複製！請將其貼上並傳送給我。');
+                    }}
+                    className="absolute top-4 right-4 bg-blue-600 text-white px-5 py-2 rounded-xl text-xs font-black flex items-center gap-2 hover:bg-blue-700 active:scale-95 transition-all shadow-xl"
+                  >
+                    <Copy size={14} /> 點擊複製代碼
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
 
       {/* 浮動按鈕 */}
       <button 
