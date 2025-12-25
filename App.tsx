@@ -13,7 +13,7 @@ import {
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
-// --- 公司標誌 (純 SVG 生成) ---
+// --- 公司標誌 ---
 const Logo = ({ className = "w-12 h-12" }: { className?: string }) => (
   <svg className={className} viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
     <path d="M20 4L36 34H4L20 4Z" fill="#2563EB" fillOpacity="0.1" stroke="#2563EB" strokeWidth="2.5" strokeLinejoin="round"/>
@@ -23,7 +23,7 @@ const Logo = ({ className = "w-12 h-12" }: { className?: string }) => (
   </svg>
 );
 
-// --- 工業設備 3D 風格 SVG 組件集 ---
+// --- 設備圖示集 ---
 const MachineryGraphics = {
   BulkBagStation: () => (
     <svg viewBox="0 0 100 100" className="w-full h-full opacity-40">
@@ -151,7 +151,6 @@ const MachineryGraphics = {
   )
 };
 
-// --- 產品介面定義 ---
 interface Product {
   id: string;
   cat: string;
@@ -159,10 +158,9 @@ interface Product {
   subtitle: string;
   Graphic: React.FC;
   advantages: string[];
-  image?: string; // 預留給 Base64 硬編碼圖片
+  image?: string; 
 }
 
-// --- 流程步驟資料 ---
 const processSteps = [
   { id: "step-infeed", title: "高效進料", target: "infeed", icon: <Upload size={24} />, desc: "太空包與手動多元投料系統", color: "bg-blue-500" },
   { id: "step-convey", title: "氣動輸送", target: "conveying_dnu", icon: <RotateCw size={24} />, desc: "密閉式低背壓長距離輸送", color: "bg-sky-500" },
@@ -172,7 +170,7 @@ const processSteps = [
   { id: "step-control", title: "系統中控", target: "control_panel", icon: <Terminal size={24} />, desc: "PLC 邏輯控制與人機協作", color: "bg-blue-900" }
 ];
 
-// --- 產品資料集 (17 項) ---
+// --- 產品資料集 ---
 const initialProducts: Product[] = [
   {
     id: "infeed",
@@ -180,8 +178,7 @@ const initialProducts: Product[] = [
     title: "太空包投料站",
     subtitle: "Bulk Bag Unloading Station",
     Graphic: MachineryGraphics.BulkBagStation,
-    advantages: ["單人操作節省人力", "全密封防止粉塵外洩", "選配振動器確保流動", "支援多種物料規格"],
-    image: "" // 未來貼上 Base64
+    advantages: ["單人操作節省人力", "全密封防止粉塵外洩", "選配振動器確保流動", "支援多種物料規格"]
   },
   {
     id: "hopper",
@@ -224,12 +221,13 @@ const initialProducts: Product[] = [
     advantages: ["高氣密性設計", "多種葉片型式可選", "具防咬料保護功能", "耐壓差性能優異"]
   },
   {
-    id: "vacuum",
-    cat: "2. 輸送 (Conveying)",
-    title: "真空吸料機",
-    subtitle: "Vacuum Conveyor System",
+    id: "vacuum", 
+    cat: "真空輸送系統",
+    title: "中央真空輸送系統",
+    subtitle: "Central Vacuum Conveying System",
     Graphic: MachineryGraphics.VacuumConveyor,
-    advantages: ["全密閉管道輸送", "體積小節省空間", "模組化濾芯自動清潔", "適合多點投料需求"]
+    advantages: ["全密閉管道輸送", "體積小節省空間", "模組化濾芯自動清潔", "適合多點投料需求"],
+    image: "" 
   },
   {
     id: "mixer",
@@ -316,11 +314,11 @@ const initialProducts: Product[] = [
 const App: React.FC = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [productImages, setProductImages] = useState<Record<string, string>>({});
+  const [failedImages, setFailedImages] = useState<Record<string, boolean>>({});
   const [showExportModal, setShowExportModal] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [activeUploadId, setActiveUploadId] = useState<string | null>(null);
 
-  // 初始化：從 LocalStorage 載入已儲存圖片
   useEffect(() => {
     const saved = localStorage.getItem('kx_product_images');
     if (saved) {
@@ -336,20 +334,28 @@ const App: React.FC = () => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  // 當圖片更新時，儲存至 LocalStorage
-  useEffect(() => {
-    if (Object.keys(productImages).length > 0) {
-      localStorage.setItem('kx_product_images', JSON.stringify(productImages));
-    }
-  }, [productImages]);
-
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file && activeUploadId) {
       const reader = new FileReader();
       reader.onloadend = () => {
         const base64String = reader.result as string;
-        setProductImages(prev => ({ ...prev, [activeUploadId]: base64String }));
+        
+        // 嘗試更新狀態與儲存
+        setProductImages(prev => {
+          const next = { ...prev, [activeUploadId]: base64String };
+          
+          try {
+            localStorage.setItem('kx_product_images', JSON.stringify(next));
+          } catch (err) {
+            console.error("LocalStorage Quota Exceeded. Image remains in memory but won't persist after refresh.");
+            alert("您的瀏覽器儲存空間已滿，圖片目前僅存於記憶體中。請點擊頁尾『導出代碼』將圖片永久儲存至程式碼。");
+          }
+          
+          return next;
+        });
+        
+        setFailedImages(prev => ({ ...prev, [activeUploadId]: false }));
       };
       reader.readAsDataURL(file);
     }
@@ -357,7 +363,11 @@ const App: React.FC = () => {
 
   const triggerUpload = (id: string) => {
     setActiveUploadId(id);
-    fileInputRef.current?.click();
+    // 重置 input value，確保選取相同檔案時也會觸發 onChange
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+      fileInputRef.current.click();
+    }
   };
 
   const removeImage = (id: string, e: React.MouseEvent) => {
@@ -368,6 +378,7 @@ const App: React.FC = () => {
       localStorage.setItem('kx_product_images', JSON.stringify(next));
       return next;
     });
+    setFailedImages(prev => ({ ...prev, [id]: false }));
   };
 
   const scrollTo = (id: string) => {
@@ -375,7 +386,6 @@ const App: React.FC = () => {
     if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
   };
 
-  // 生成新的 initialProducts 程式碼字串
   const generateExportCode = () => {
     const updatedProducts = initialProducts.map(p => ({
       ...p,
@@ -386,21 +396,15 @@ const App: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-sky-50 font-sans text-slate-800 antialiased">
+      {/* 隱藏的 Input 框 */}
       <input 
         type="file" 
         ref={fileInputRef} 
         className="hidden" 
-        accept="image/png, image/jpeg" 
-        onChange={handleFileChange}
+        accept="image/png, image/jpeg, image/webp" 
+        onChange={handleFileChange} 
       />
 
-      {/* 背景裝飾 */}
-      <div className="fixed inset-0 pointer-events-none z-0 opacity-30">
-        <div className="absolute top-0 right-0 w-[800px] h-[800px] bg-blue-200 blur-[150px] rounded-full"></div>
-        <div className="absolute bottom-0 left-0 w-[600px] h-[600px] bg-sky-200 blur-[120px] rounded-full"></div>
-      </div>
-
-      {/* 導覽列 */}
       <nav className={`fixed top-0 w-full z-50 transition-all duration-500 ${isScrolled ? 'bg-white/90 backdrop-blur-md py-3 border-b border-blue-100 shadow-sm' : 'bg-transparent py-6'}`}>
         <div className="container mx-auto px-6 flex justify-between items-center">
           <div className="flex items-center gap-4 cursor-pointer" onClick={() => window.scrollTo({top:0, behavior:'smooth'})}>
@@ -418,109 +422,33 @@ const App: React.FC = () => {
         </div>
       </nav>
 
-      {/* Hero */}
-      <header className="relative min-h-[85vh] flex items-center pt-24 overflow-hidden">
-        <div className="container mx-auto px-6 relative z-10 text-center">
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8 }}>
-            <div className="inline-flex items-center gap-2 px-5 py-2 bg-blue-100/50 text-blue-700 rounded-full text-[10px] font-black uppercase tracking-[0.2em] mb-10 border border-blue-200/50">
-              Smart Automation for Bulk Handling
-            </div>
-            <h1 className="text-6xl lg:text-9xl font-black mb-12 leading-[0.9] tracking-tighter text-blue-950">
-              工業粉體<br/><span className="text-blue-600 italic">智慧解決方案</span>
-            </h1>
-            <p className="text-xl lg:text-2xl text-slate-600 mb-12 max-w-4xl mx-auto font-medium leading-relaxed">
-              深耕氣動輸送與精密計量技術，為您打造低粉塵、高效率、全自動化的智慧工廠。
-            </p>
-            <div className="flex justify-center gap-6">
-              <button onClick={() => scrollTo('process')} className="px-12 py-6 bg-blue-600 text-white font-black rounded-3xl hover:bg-blue-700 shadow-2xl transition-all flex items-center gap-4 group">
-                了解工藝流程 <ArrowRight size={20} className="group-hover:translate-x-2 transition-transform" />
-              </button>
-            </div>
+      <header className="relative min-h-[85vh] flex items-center pt-24 overflow-hidden text-center">
+        <div className="container mx-auto px-6 relative z-10">
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+            <div className="inline-flex items-center gap-2 px-5 py-2 bg-blue-100/50 text-blue-700 rounded-full text-[10px] font-black uppercase tracking-[0.2em] mb-10 border border-blue-200/50">Smart Automation</div>
+            <h1 className="text-6xl lg:text-9xl font-black mb-12 leading-[0.9] tracking-tighter text-blue-950">工業粉體<br/><span className="text-blue-600 italic">智慧解決方案</span></h1>
+            <p className="text-xl lg:text-2xl text-slate-600 mb-12 max-w-4xl mx-auto font-medium leading-relaxed">氣動輸送與精密計量專家，為您打造高效自動化產線。</p>
+            <button onClick={() => scrollTo('process')} className="px-12 py-6 bg-blue-600 text-white font-black rounded-3xl hover:bg-blue-700 shadow-2xl flex items-center gap-4 mx-auto transition-transform active:scale-95">了解工藝流程 <ArrowRight size={20} /></button>
           </motion.div>
         </div>
       </header>
 
-      {/* 工業流程區塊 */}
-      <section id="process" className="py-32 relative z-10 overflow-hidden">
-        <div className="container mx-auto px-6">
-          <div className="mb-24 text-center">
-            <h2 className="text-5xl font-black text-blue-950 mb-8 tracking-tighter">智慧工藝流程</h2>
-            <div className="h-2 w-32 bg-blue-600 mx-auto rounded-full mb-6"></div>
-            <p className="text-blue-400 font-black uppercase tracking-[0.4em] text-xs">Integrated Smart Process Path</p>
-          </div>
-
-          <div className="relative flex flex-col md:flex-row justify-between items-start gap-8 max-w-7xl mx-auto">
-            {/* 連接線 (Desktop) */}
-            <div className="absolute top-1/3 left-0 w-full h-1 bg-blue-100 hidden md:block z-0">
-               <motion.div 
-                 initial={{ width: 0 }}
-                 whileInView={{ width: '100%' }}
-                 transition={{ duration: 2, ease: "easeInOut" }}
-                 className="h-full bg-blue-500 relative"
-               >
-                 <div className="absolute right-0 top-1/2 -translate-y-1/2 w-4 h-4 bg-blue-500 rounded-full animate-ping"></div>
-               </motion.div>
-            </div>
-
-            {processSteps.map((step, index) => (
-              <motion.div 
-                key={step.id}
-                initial={{ opacity: 0, scale: 0.9 }}
-                whileInView={{ opacity: 1, scale: 1 }}
-                transition={{ delay: index * 0.15 }}
-                viewport={{ once: true }}
-                onClick={() => scrollTo(step.target)}
-                className="relative z-10 w-full md:flex-1 group cursor-pointer"
-              >
-                <div className="bg-white/60 backdrop-blur-xl p-6 rounded-[2.5rem] border border-white shadow-xl hover:shadow-2xl transition-all group-hover:-translate-y-4 h-full">
-                  <div className={`w-16 h-16 ${step.color} text-white rounded-2xl flex items-center justify-center mb-6 shadow-lg group-hover:rotate-12 transition-transform`}>
-                    {step.icon}
-                  </div>
-                  <h3 className="text-xl font-black text-blue-950 mb-3">{step.title}</h3>
-                  <p className="text-slate-500 text-xs font-bold leading-relaxed">{step.desc}</p>
-                </div>
-                
-                {/* 手機版箭頭 */}
-                {index < processSteps.length - 1 && (
-                  <div className="flex justify-center my-6 md:hidden">
-                    <MoveRight size={32} className="text-blue-300 rotate-90" />
-                  </div>
-                )}
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* 產品展示區 */}
       <section id="products" className="py-32 relative z-10">
         <div className="container mx-auto px-6">
-          <div className="mb-24 text-center">
-            <h2 className="text-5xl lg:text-6xl font-black text-blue-950 mb-8 tracking-tighter">全方位設備目錄</h2>
-            <div className="h-2 w-32 bg-blue-600 mx-auto rounded-full mb-6"></div>
-            <p className="text-blue-400 font-black uppercase tracking-[0.4em] text-xs">Full Spectrum Equipment Catalog</p>
-          </div>
-
           <div className="grid grid-cols-1 gap-16 max-w-6xl mx-auto">
             {initialProducts.map((p) => {
               const currentImage = productImages[p.id] || p.image;
+              const hasFailed = failedImages[p.id];
+              // 檢查圖片是否為有效 Base64 (長度大於 100 且不包含省略號)
+              const isValidImage = currentImage && currentImage.length > 100 && !currentImage.includes("...");
+
               return (
-                <motion.div 
-                  key={p.id} 
-                  id={p.id}
-                  initial={{ opacity: 0, y: 30 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true, margin: "-100px" }}
-                  className="bg-white p-10 lg:p-16 rounded-[4rem] border border-blue-50/50 shadow-sm hover:shadow-2xl transition-all relative group"
-                >
+                <motion.div key={p.id} id={p.id} initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} className="bg-white p-10 lg:p-16 rounded-[4rem] border border-blue-50/50 shadow-sm hover:shadow-2xl transition-all relative group overflow-hidden">
                   <div className="relative z-10 flex flex-col lg:flex-row gap-14 items-center">
                     <div className="flex-1">
-                      <div className="inline-flex items-center gap-3 px-5 py-2 bg-blue-50 text-blue-600 rounded-full text-[10px] font-black uppercase tracking-widest mb-10 border border-blue-100">
-                        {p.cat}
-                      </div>
+                      <div className="inline-flex items-center gap-3 px-5 py-2 bg-blue-50 text-blue-600 rounded-full text-[10px] font-black uppercase tracking-widest mb-10 border border-blue-100">{p.cat}</div>
                       <h3 className="text-4xl lg:text-5xl font-black text-blue-950 mb-6 tracking-tight leading-tight">{p.title}</h3>
                       <p className="text-xl text-blue-600/60 font-bold mb-10 italic">{p.subtitle}</p>
-                      
                       <ul className="grid grid-cols-1 md:grid-cols-2 gap-y-6 gap-x-12 mb-10">
                         {p.advantages.map((adv, i) => (
                           <li key={i} className="flex gap-4 text-slate-600 font-semibold text-lg items-start">
@@ -531,48 +459,35 @@ const App: React.FC = () => {
                       </ul>
                     </div>
 
-                    {/* 影像展示區 */}
+                    {/* 上傳區塊：確保點擊穩定性 */}
                     <div 
-                      onClick={() => triggerUpload(p.id)}
-                      className="lg:w-[42%] w-full aspect-square rounded-[3.5rem] bg-slate-50 border-2 border-dashed border-blue-100 flex items-center justify-center p-10 transition-all relative overflow-hidden cursor-pointer hover:bg-blue-50/50 group/img shadow-inner"
+                      onClick={() => triggerUpload(p.id)} 
+                      className="lg:w-[42%] w-full aspect-square rounded-[3.5rem] bg-slate-50 border-2 border-dashed border-blue-100 flex items-center justify-center p-10 transition-all relative overflow-hidden cursor-pointer hover:bg-blue-50/50 shadow-inner group/upload"
                     >
                       <AnimatePresence mode="wait">
-                        {currentImage ? (
-                          <motion.div 
-                            key="image"
-                            initial={{ opacity: 0, scale: 0.95 }}
-                            animate={{ opacity: 1, scale: 1 }}
-                            exit={{ opacity: 0, scale: 0.95 }}
-                            className="w-full h-full relative flex items-center justify-center"
-                          >
+                        {isValidImage && !hasFailed ? (
+                          <motion.div key="image" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="w-full h-full relative flex items-center justify-center">
                             <img 
                               src={currentImage} 
                               alt={p.title} 
-                              className="max-w-full max-h-full object-contain drop-shadow-[0_30px_60px_rgba(0,0,0,0.12)]"
+                              className="max-w-full max-h-full object-contain drop-shadow-[0_20px_40px_rgba(0,0,0,0.1)] transition-transform group-hover/upload:scale-105"
+                              onError={() => setFailedImages(prev => ({ ...prev, [p.id]: true }))}
                             />
-                            <div className="absolute top-2 right-2 flex gap-2 opacity-0 group-hover/img:opacity-100 transition-opacity">
-                              <button 
-                                onClick={(e) => removeImage(p.id, e)}
-                                className="bg-red-500 text-white p-3 rounded-2xl shadow-xl hover:bg-red-600"
-                              >
-                                <X size={20} />
-                              </button>
-                            </div>
+                            <button 
+                              onClick={(e) => removeImage(p.id, e)} 
+                              className="absolute top-2 right-2 bg-red-500 text-white p-2 rounded-xl opacity-0 group-hover/upload:opacity-100 transition-opacity z-20 shadow-lg hover:bg-red-600"
+                            >
+                              <X size={16} />
+                            </button>
                           </motion.div>
                         ) : (
-                          <motion.div 
-                            key="placeholder"
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            className="text-center w-full"
-                          >
-                            <div className="mb-10 mx-auto w-32 h-32 transform group-hover/img:scale-110 transition-transform duration-500">
+                          <motion.div key="placeholder" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-center w-full">
+                            <div className="mb-6 mx-auto w-32 h-32 opacity-30 group-hover/upload:scale-110 group-hover/upload:opacity-50 transition-all duration-500">
                               <p.Graphic />
                             </div>
-                            <div className="flex flex-col items-center gap-3 text-blue-400">
-                              <Upload size={36} />
+                            <div className="flex flex-col items-center gap-2 text-blue-400 group-hover/upload:text-blue-600 transition-colors">
+                              <Upload size={32} />
                               <span className="text-xs font-black uppercase tracking-widest">點擊上傳設備照片</span>
-                              <span className="text-[10px] opacity-40 font-bold uppercase tracking-[0.2em]">PNG / JPG Only</span>
                             </div>
                           </motion.div>
                         )}
@@ -586,105 +501,64 @@ const App: React.FC = () => {
         </div>
       </section>
 
-      {/* 頁尾聯絡資訊 */}
-      <footer id="contact" className="py-40 bg-blue-950 text-white relative">
-        <div className="container mx-auto px-6 text-center">
-          <Logo className="w-24 h-24 mx-auto mb-12 opacity-30" />
-          <h2 className="text-5xl lg:text-7xl font-black mb-16 tracking-tighter italic uppercase">Let's Build Together</h2>
-          
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-12 max-w-5xl mx-auto mb-24">
-             <div className="bg-white/5 p-10 rounded-[2.5rem] border border-white/10 hover:border-blue-500/30 transition-all group">
-                <div className="w-16 h-16 bg-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-8 shadow-lg group-hover:scale-110 transition-transform"><Phone size={28} /></div>
-                <div className="text-xs font-black text-blue-400 uppercase tracking-widest mb-2">聯絡專線</div>
-                <div className="text-2xl font-black">03-9908036</div>
-             </div>
-             <div className="bg-white/5 p-10 rounded-[2.5rem] border border-white/10 hover:border-blue-500/30 transition-all group">
-                <div className="w-16 h-16 bg-white/10 rounded-2xl flex items-center justify-center mx-auto mb-8 border border-white/20 group-hover:scale-110 transition-transform"><MapPin size={28} /></div>
-                <div className="text-xs font-black text-blue-400 uppercase tracking-widest mb-2">工廠地址</div>
-                <div className="text-lg font-bold leading-tight opacity-90">宜蘭縣五結鄉利工一路二段116巷15號</div>
-             </div>
-             <div className="bg-white/5 p-10 rounded-[2.5rem] border border-white/10 hover:border-blue-500/30 transition-all group">
-                <div className="w-16 h-16 bg-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-8 shadow-lg group-hover:scale-110 transition-transform"><Mail size={28} /></div>
-                <div className="text-xs font-black text-blue-400 uppercase tracking-widest mb-2">商務信箱</div>
-                <div className="text-xl font-mono text-blue-200">zack31717@gmail.com</div>
-             </div>
+      <footer id="contact" className="py-24 bg-blue-950 text-white text-center relative z-10">
+        <div className="container mx-auto px-6">
+          <Logo className="w-16 h-16 mx-auto mb-8 opacity-30" />
+          <h2 className="text-4xl font-black mb-12 tracking-tighter uppercase italic">Ready to optimize?</h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-4xl mx-auto mb-16">
+            <div className="p-8 bg-white/5 rounded-3xl border border-white/10 hover:bg-white/10 transition-all">
+              <Phone className="mx-auto mb-4 text-blue-400" />
+              <div className="text-lg font-bold">03-9908036</div>
+            </div>
+            <div className="p-8 bg-white/5 rounded-3xl border border-white/10 hover:bg-white/10 transition-all">
+              <Mail className="mx-auto mb-4 text-blue-400" />
+              <div className="text-sm font-mono">zack31717@gmail.com</div>
+            </div>
+            <div className="p-8 bg-white/5 rounded-3xl border border-white/10 hover:bg-white/10 transition-all">
+              <MapPin className="mx-auto mb-4 text-blue-400" />
+              <div className="text-sm">宜蘭縣五結鄉利工一路二段116巷15號</div>
+            </div>
           </div>
-          
-          {/* 管理工具按鈕 */}
-          <div className="mb-20">
+          <div className="mb-10">
             <button 
               onClick={() => setShowExportModal(true)}
               className="px-8 py-4 bg-white/10 border border-white/20 rounded-2xl flex items-center gap-3 mx-auto hover:bg-white/20 transition-all group"
             >
               <Database size={20} className="text-blue-400 group-hover:scale-110 transition-transform" />
-              <span className="text-xs font-black uppercase tracking-widest">💾 導出更新代碼 (Export Code)</span>
+              <span className="text-xs font-black uppercase tracking-widest">導出部署代碼 (Export Code)</span>
             </button>
-            <p className="mt-4 text-[10px] text-white/40 font-bold uppercase tracking-widest">
-              點擊後複製代碼並回傳給 AI，即可永久保存目前上傳的圖片
-            </p>
           </div>
-
-          <div className="pt-12 border-t border-white/10 flex flex-col md:flex-row justify-between items-center gap-8">
-            <div className="flex items-center gap-4 text-xs font-black uppercase tracking-widest text-white/40">
-              <Hash size={16} className="text-blue-500" /> 統一編號: 29113377
-            </div>
-            <div className="text-[10px] opacity-20 font-black uppercase tracking-[0.5em]">
-              © 2024 KUN XING MACHINERY CO., LTD. DESIGNED FOR EXCELLENCE.
-            </div>
-          </div>
+          <div className="text-[10px] opacity-20 font-black tracking-[0.5em] uppercase">© 2024 KUN XING MACHINERY CO., LTD.</div>
         </div>
       </footer>
 
-      {/* 導出代碼彈窗 */}
+      {/* 彈窗工具 */}
       <AnimatePresence>
         {showExportModal && (
           <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-blue-950/80 backdrop-blur-md">
-            <motion.div 
-              initial={{ opacity: 0, scale: 0.9, y: 20 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.9, y: 20 }}
-              className="bg-white w-full max-w-4xl max-h-[80vh] rounded-[3rem] shadow-2xl flex flex-col overflow-hidden"
-            >
+            <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.9 }} className="bg-white w-full max-w-4xl max-h-[80vh] rounded-[3rem] shadow-2xl flex flex-col overflow-hidden">
               <div className="p-8 border-b flex justify-between items-center bg-slate-50">
-                <div className="flex items-center gap-3">
-                  <Code className="text-blue-600" />
-                  <h3 className="text-xl font-black text-blue-950 uppercase tracking-tighter">系統資料同步工具</h3>
-                </div>
+                <h3 className="text-xl font-black text-blue-950 uppercase tracking-tighter">系統資料同步工具</h3>
                 <button onClick={() => setShowExportModal(false)} className="p-2 hover:bg-slate-200 rounded-full transition-colors"><X /></button>
               </div>
               <div className="p-8 flex-1 overflow-auto">
-                <p className="text-sm text-slate-500 font-bold mb-6 flex items-center gap-2 italic">
-                  <CheckCircle2 size={16} className="text-green-500" /> 請複製下方 JSON 代碼，並在對話框中貼上給我，我將為您永久更新 initialProducts 陣列。
-                </p>
-                <div className="relative group">
-                  <textarea 
-                    readOnly 
-                    value={generateExportCode()}
-                    className="w-full h-[400px] p-6 bg-slate-900 text-blue-300 font-mono text-xs rounded-3xl border-0 focus:ring-0 resize-none selection:bg-blue-500/30"
-                  />
-                  <button 
-                    onClick={() => {
-                      navigator.clipboard.writeText(generateExportCode());
-                      alert('代碼已複製！請將其貼上並傳送給我。');
-                    }}
-                    className="absolute top-4 right-4 bg-blue-600 text-white px-5 py-2 rounded-xl text-xs font-black flex items-center gap-2 hover:bg-blue-700 active:scale-95 transition-all shadow-xl"
-                  >
-                    <Copy size={14} /> 點擊複製代碼
-                  </button>
-                </div>
+                <textarea readOnly value={generateExportCode()} className="w-full h-[400px] p-6 bg-slate-900 text-blue-300 font-mono text-xs rounded-3xl border-0 focus:ring-0 resize-none" />
+                <button 
+                  onClick={() => {
+                    navigator.clipboard.writeText(generateExportCode());
+                    alert('代碼已複製！請貼給 AI 進行永久保存。');
+                  }}
+                  className="mt-4 w-full bg-blue-600 text-white py-4 rounded-2xl font-black uppercase flex items-center justify-center gap-2"
+                >
+                  <Copy size={20} /> 複製代碼
+                </button>
               </div>
             </motion.div>
           </div>
         )}
       </AnimatePresence>
 
-      {/* 浮動按鈕 */}
-      <button 
-        onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-        className="fixed bottom-12 right-12 w-16 h-16 bg-blue-600 text-white rounded-2xl shadow-2xl flex items-center justify-center hover:bg-blue-700 transition-all active:scale-95 z-50 border border-blue-500 shadow-blue-600/30"
-      >
-        <ArrowUp size={32} />
-      </button>
+      <button onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })} className="fixed bottom-8 right-8 w-14 h-14 bg-blue-600 text-white rounded-2xl shadow-xl flex items-center justify-center hover:bg-blue-700 transition-all z-50 active:scale-95"><ArrowUp size={24} /></button>
     </div>
   );
 };
