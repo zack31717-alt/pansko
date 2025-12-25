@@ -7,6 +7,9 @@ import {
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
+const IMAGE_BASE =
+  "https://raw.githubusercontent.com/zack31717-alt/pansko/main/";
+
 // --- 公司標誌 ---
 const Logo = ({ className = "w-12 h-12" }: { className?: string }) => (
   <svg className={className} viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -72,36 +75,49 @@ const MachineryGraphics = {
   )
 };
 
+type ProductGraphic = React.ComponentType;
+
 interface Product {
   id: string;
   cat: string;
   title: string;
   subtitle: string;
-  Graphic: React.FC;
+  Graphic: ProductGraphic;
   advantages: string[];
-  image: string;
+  image: string; // 先放檔名，下面會自動補 IMAGE_BASE
 }
 
-// --- 產品資料清單 ---
-const initialProducts: Product[] = [
-  { id: "infeed", cat: "1. 進料 (Infeed)", title: "太空包投料站", subtitle: "Bulk Bag Unloading Station", Graphic: MachineryGraphics.BulkBagStation, advantages: ["單人操作節省人力", "全密封防止粉塵外洩", "選配振動器確保流動", "支援多種物料規格"], image: "INFEED.png" },
+// 先用「檔名」寫一份原始清單
+const initialProductsRaw: Product[] = [
+  { id: "infeed", cat: "1. 進料 (Infeed)", title: "太空包投料站", subtitle: "Bulk Bag Unloading Station", Graphic: MachineryGraphics.BulkBagStation, advantages: ["單人操作節省人力", "全密封防止粉塵外洩", "選配振動器確保流動", "支援多種物料規格"], image: "infeed.png" },
   { id: "hopper", cat: "1. 進料 (Infeed)", title: "手動投料斗", subtitle: "Manual Dumping Station", Graphic: MachineryGraphics.Hopper, advantages: ["人體工學設計", "內置簡易過濾網", "可與集塵系統連動", "不鏽鋼鏡面處理"], image: "hopper.png" },
+
   { id: "conveying_dnu", cat: "2. 輸送 (Conveying)", title: "DNU/SNU 輸送裝置", subtitle: "無背壓氣動輸送革新", Graphic: MachineryGraphics.Venturi, advantages: ["獨特微負壓設計", "可取代傳統迴轉閥", "大幅減少系統背壓", "耐磨損長效運轉"], image: "conveying_dnu.png" },
   { id: "rcu_air", cat: "2. 輸送 (Conveying)", title: "RCU 空氣輸送機", subtitle: "RCU Pneumatic Conveying System", Graphic: MachineryGraphics.RCUAIR, advantages: ["密閉高壓循環技術", "適合長距離穩定輸送", "物料破損率極低", "氣體消耗量低、高節能"], image: "rcu_air.png" },
   { id: "tubular", cat: "2. 輸送 (Conveying)", title: "管鏈輸送機", subtitle: "Tubular Cable & Chain Conveyor", Graphic: MachineryGraphics.TubularConveyor, advantages: ["3D 空間任意佈局", "超低能耗運行", "物料輸送溫和無破損", "完全密閉無粉塵外洩"], image: "tubular.png" },
   { id: "rotary_valve", cat: "2. 輸送 (Conveying)", title: "迴轉閥 (Rotary Valve)", subtitle: "精密氣鎖與定量給料", Graphic: MachineryGraphics.RotaryValve, advantages: ["高氣密性設計", "多種葉片型式可選", "具防咬料保護功能", "耐壓差性能優異"], image: "rotary_valve.png" },
+
   { id: "vacuum", cat: "真空輸送系統", title: "中央真空輸送系統", subtitle: "Central Vacuum Conveying System", Graphic: MachineryGraphics.VacuumConveyor, advantages: ["全密閉管道輸送", "體積小節省空間", "模組化濾芯自動清潔", "適合多點投料需求"], image: "vacuum.png" },
   { id: "mixer", cat: "2. 輸送 (Conveying)", title: "螺旋輸送機含攪拌機", subtitle: "輸送與均化一體化方案", Graphic: MachineryGraphics.ScrewConveyor, advantages: ["輸送與攪拌同步完成", "有效防止粉體架橋", "結構緊湊節省空間", "支援模組化長度擴展"], image: "mixer.png" },
   { id: "diverter", cat: "2. 輸送 (Conveying)", title: "雙路切換閥", subtitle: "多路徑流道切換裝置", Graphic: MachineryGraphics.DiverterValve, advantages: ["平滑內壁無死角", "氣動快速切換", "極低物料殘留", "耐磨損不鏽鋼閥瓣"], image: "diverter.png" },
+
   { id: "metering", cat: "3. 製程 (Processing)", title: "計量桶 (Metering Tank)", subtitle: "精準配比之核心工藝", Graphic: MachineryGraphics.MeteringTank, advantages: ["超高計量精度 (1/1000)", "支援 50L 至 1000L", "全不鏽鋼潔淨設計", "易於連結自動控制系統"], image: "metering.png" },
   { id: "loss_in_weight", cat: "3. 製程 (Processing)", title: "失重式供料機", subtitle: "Loss-in-Weight Feeder", Graphic: MachineryGraphics.LossInWeight, advantages: ["動態連續稱重補償", "適用於微量精準添加", "全封閉防干擾結構", "數位化智慧控制界面"], image: "loss_in_weight.png" },
   { id: "cyclone", cat: "3. 製程 (Processing)", title: "旋風分離器", subtitle: "高效氣粉分離組件", Graphic: MachineryGraphics.Cyclone, advantages: ["去除 5~10μm 以上粉塵", "無活動部件維護極簡", "耐高溫高壓適合惡劣環境", "作為輸送末端氣固分離"], image: "cyclone.png" },
   { id: "screen", cat: "3. 製程 (Processing)", title: "高效振動篩", subtitle: "物料分級與雜質過濾", Graphic: MachineryGraphics.VibratingScreen, advantages: ["多層篩網同時作業", "低噪音高性能電機", "密封設計防止粉塵擴散", "快速拆裝清洗方便"], image: "screen.png" },
+
   { id: "dust", cat: "4. 環境 (Environmental)", title: "集塵機 (Dust Collector)", subtitle: "維護產線潔淨與安全", Graphic: MachineryGraphics.DustCollector, advantages: ["多層高效過濾濾材", "氣動脈衝自動清灰", "高效能渦輪穩定吸力", "模組化易維護結構"], image: "dust.png" },
-  { id: "control_panel", cat: "5. 自動化 (Automation)", title: "智慧中央控制盤", subtitle: "Industrial PLC & HMI System", Graphic: MachineryGraphics.ControlPanel, advantages: ["PLC 邏輯程序自動化控制", "HMI 直觀人機圖形介面", "支援遠端監控與大數據分析", "符合 CE/UL 工業配線標準"], image: "CONTROL_PANEL.png" },
+  { id: "control_panel", cat: "5. 自動化 (Automation)", title: "智慧中央控制盤", subtitle: "Industrial PLC & HMI System", Graphic: MachineryGraphics.ControlPanel, advantages: ["PLC 邏輯程序自動化控制", "HMI 直觀人機圖形介面", "支援遠端監控與大數據分析", "符合 CE/UL 工業配線標準"], image: "control_panel.png" },
+
   { id: "pipeline_analysis", cat: "6. 工程服務 (Engineering)", title: "管路壓力與流場分析", subtitle: "Advanced CFD Flow Simulation", Graphic: MachineryGraphics.PipelineAnalysis, advantages: ["精準模擬氣固兩相流運動", "預測管路易磨損與死角區域", "最佳化風量與輸送壓降", "大幅降低堵料風險與能耗"], image: "pipeline_analysis.png" },
   { id: "platform", cat: "7.整合 (Integration)", title: "客製化設備鋼構架台", subtitle: "穩固系統的基礎基石", Graphic: MachineryGraphics.StructuralPlatform, advantages: ["依廠房空間量身打造", "高強度鋼材確保載重安全", "模組化設計快速安裝", "整合多項設備之基礎架構"], image: "platform.png" }
 ];
+
+// 再把檔名補成完整 URL
+const initialProducts: Product[] = initialProductsRaw.map(p => ({
+  ...p,
+  image: /^https?:\/\//i.test(p.image) ? p.image : `${IMAGE_BASE}${p.image}`,
+}));
 
 const App: React.FC = () => {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -125,18 +141,18 @@ const App: React.FC = () => {
     setImageLoadErrors(prev => ({ ...prev, [id]: (prev[id] || 0) + 1 }));
   };
 
-  const getSource = (p: Product) => {
-    if (productImages[p.id]) return productImages[p.id];
-    
-    const count = imageLoadErrors[p.id] || 0;
-    // 智慧回退邏輯：嘗試多種命名可能
-    const basePath = `./images/`;
-    if (count === 0) return `${basePath}${p.image}`;
-    if (count === 1) return `${basePath}${p.image.toLowerCase()}`;
-    if (count === 2) return `${basePath}${p.image.toUpperCase()}`;
-    if (count === 3) return `${basePath}${p.image.replace('.png', '.png')}`;
-    return null;
-  };
+ const isHttpUrl = (s: string) => /^https?:\/\//i.test(s);
+
+const getSource = (p: Product) => {
+  // 1️⃣ 使用者有上傳圖片（base64）→ 最高優先
+  if (productImages[p.id]) return productImages[p.id];
+
+  // 2️⃣ image 是 GitHub raw 的完整網址
+  if (isHttpUrl(p.image)) return p.image;
+
+  // 3️⃣ 保底
+  return null;
+};
 
   const triggerUpload = (id: string) => {
     setActiveUploadId(id);
@@ -224,6 +240,7 @@ const App: React.FC = () => {
             >
               {jumboSrc ? (
                 <img 
+                  key={`jumbo-${imageLoadErrors['infeed']}`}
                   src={jumboSrc} 
                   alt="Jumbo Feature" 
                   onError={() => handleImageError('infeed')}
@@ -255,7 +272,8 @@ const App: React.FC = () => {
           <div className="grid grid-cols-1 gap-12 max-w-6xl mx-auto">
             {initialProducts.map((p) => {
               const src = getSource(p);
-              const isError = (imageLoadErrors[p.id] || 0) > 5;
+              const errors = imageLoadErrors[p.id] || 0;
+              const isError = errors >= 4; // Only show fallback if all variations fail
 
               return (
                 <motion.div 
@@ -270,7 +288,7 @@ const App: React.FC = () => {
                           {p.cat}
                         </div>
                         <div className="flex items-center gap-1.5 px-3 py-1 bg-slate-50 text-slate-400 rounded-full text-[9px] font-bold border border-slate-100">
-                          <FolderOpen size={10} /> ./images/{p.image}
+                          <FolderOpen size={10} /> {p.image}
                         </div>
                       </div>
                       <h3 className="text-4xl font-black text-slate-900 mb-4 tracking-tight">{p.title}</h3>
@@ -296,6 +314,7 @@ const App: React.FC = () => {
                         </div>
                       ) : src ? (
                         <img 
+                          key={`${p.id}-${errors}`}
                           src={src} 
                           alt={p.title} 
                           onError={() => handleImageError(p.id)}
@@ -342,9 +361,13 @@ const App: React.FC = () => {
               </div>
               <div className="p-10 flex-1 overflow-auto bg-slate-50">
                 <div className="bg-blue-600 text-white p-8 rounded-[2rem] mb-8 shadow-xl shadow-blue-600/20">
-                   <p className="text-lg font-black mb-2 italic">路徑偵測機制說明：</p>
+                   <p className="text-lg font-black mb-2 italic">載入機制說明：</p>
                    <p className="text-sm opacity-90 leading-relaxed font-medium">
-                     系統目前預設在 <span className="underline">images</span> 資料夾尋找檔案。若您在清單中看到 <span className="font-mono">.png</span>，表示系統會優先尋找雙重副檔名的檔案，若找不到則自動回退至單一副檔名。
+                     系統會嘗試多個路徑以尋找您的圖片：<br/>
+                     1. <span className="font-mono">./images/[檔名].png</span><br/>
+                     2. <span className="font-mono">images/[檔名].png</span><br/>
+                     3. <span className="font-mono">./[檔名].png</span> (根目錄)<br/>
+                     請確保圖片放在 index.html 旁邊的 images 資料夾中。
                    </p>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -352,7 +375,7 @@ const App: React.FC = () => {
                     <div key={p.id} className="p-5 bg-white border border-slate-200 rounded-2xl flex justify-between items-center group hover:border-blue-400 transition-all">
                       <div className="flex flex-col">
                         <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{p.title}</span>
-                        <code className="text-sm font-mono font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded mt-1">./images/{p.image}</code>
+                        <code className="text-sm font-mono font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded mt-1">{p.image}</code>
                       </div>
                       <Copy size={16} className="text-slate-300 group-hover:text-blue-500 cursor-pointer" onClick={() => {
                         navigator.clipboard.writeText(p.image);
