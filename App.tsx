@@ -4,7 +4,8 @@ import {
   Wind, RotateCw, Layers, ArrowRight, Activity, Phone, Mail, CheckCircle2,
   ArrowUp, MapPin, Upload, X, Gauge, Terminal, Database, Download, Copy, Info,
   Loader2, Image as ImageIcon, FolderOpen, FileCheck, Star, Settings, Truck, ShieldCheck,
-  Layout, PhoneCall, Building2, Printer, Fingerprint, Search, ClipboardCheck, Wrench
+  Layout, PhoneCall, Building2, Printer, Fingerprint, Search, ClipboardCheck, Wrench,
+  TrendingDown, Puzzle, Leaf
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -18,6 +19,48 @@ const Logo = ({ className = "w-12 h-12" }: { className?: string }) => (
     <path d="M8 24C11 22 15 26 18 24C21 22 25 26 28 24" stroke="#2563EB" strokeWidth="2" strokeLinecap="round"/>
     <path d="M6 30C9 28 13 32 16 30C19 28 23 32 26 30" stroke="#2563EB" strokeWidth="2" strokeLinecap="round"/>
   </svg>
+);
+
+// --- 挑戰與承諾視覺組件 (新) ---
+const ChallengeCommitmentGraphic = () => (
+  <div className="bg-white/80 backdrop-blur-sm rounded-[2.5rem] border border-slate-200 shadow-2xl p-8 lg:p-10 text-left relative overflow-hidden h-full flex flex-col justify-center">
+    <div className="absolute top-0 right-0 p-4 opacity-5">
+      <Logo className="w-32 h-32" />
+    </div>
+    <div className="relative z-10 grid grid-cols-1 md:grid-cols-2 gap-10">
+      {/* 左側：挑戰 */}
+      <div className="space-y-6">
+        <h4 className="text-xl font-black text-slate-900 border-l-4 border-blue-600 pl-4 mb-6 italic">您是否面臨以下挑戰？</h4>
+        <div className="space-y-5">
+          {[
+            { icon: Activity, title: "效率瓶頸", desc: "物料輸送不順、換料時間過長、系統頻繁停機？" },
+            { icon: Leaf, title: "環境與安全", desc: "粉塵外洩汙染產線，影響人員健康與工安？" },
+            { icon: TrendingDown, title: "成本壓力", desc: "能源消耗過高、維護成本攀升、物料浪費？" },
+            { icon: Puzzle, title: "整合困難", desc: "各家設備規格不一，難以整合成高效產線？" }
+          ].map((item, idx) => (
+            <div key={idx} className="flex gap-4 group">
+              <div className="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center shrink-0 group-hover:bg-blue-600 group-hover:text-white transition-colors">
+                <item.icon size={20} />
+              </div>
+              <div>
+                <div className="text-sm font-black text-slate-800">{item.title}</div>
+                <div className="text-[11px] text-slate-500 font-medium leading-relaxed">{item.desc}</div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* 右側：理念 */}
+      <div className="md:border-l border-slate-200 md:pl-10 flex flex-col justify-center">
+        <h4 className="text-xl font-black text-slate-900 mb-6 italic">我們的理念：<br/><span className="text-blue-600">以系統思維打造客製化整合方案</span></h4>
+        <p className="text-sm text-slate-600 leading-loose font-medium">
+          <span className="font-black text-blue-700">PANSKO</span> 不僅提供單一設備，我們更專注於深入了解您的製程需求。
+          我們以系統整合的角度，提供從前端設計、設備客製化到現場施工的完整解決方案，確保每一環節無縫銜接，為您打造穩定、高效且安全的智慧化產線。
+        </p>
+      </div>
+    </div>
+  </div>
 );
 
 // --- 設備圖示集 ---
@@ -92,7 +135,7 @@ const initialProductsRaw: Product[] = [
   { id: "rcu_air", cat: "2. 輸送 (Conveying)", title: "RCU 空氣輸送機", subtitle: "RCU Pneumatic Conveying System", Graphic: MachineryGraphics.RCUAIR, advantages: ["密閉高壓循環技術", "適合長距離穩定輸送", "物料破損率極低", "氣體消耗量低、高節能"], image: "rcu_air.png" },
   { id: "tubular", cat: "2. 輸送 (Conveying)", title: "管鏈輸送機", subtitle: "Tubular Cable & Chain Conveyor", Graphic: MachineryGraphics.TubularConveyor, advantages: ["3D 空間任意佈局", "超低能耗運行", "物料輸送溫和無破損", "完全密閉無粉塵外洩"], image: "tubular.png" },
   { id: "rotary_valve", cat: "2. 輸送 (Conveying)", title: "迴轉閥 (Rotary Valve)", subtitle: "精密氣鎖與定量給料", Graphic: MachineryGraphics.RotaryValve, advantages: ["高氣密性設計", "多種葉片型式可選", "具防咬料保護功能", "耐壓差性能優異"], image: "rotary_valve.png" },
-  { id: "vacuum", cat: "真空輸送系統", title: "中央真空輸送系統", subtitle: "Central Vacuum Conveying System", Graphic: MachineryGraphics.VacuumConveyor, advantages: ["全密閉管道輸送", "體積小節省空間", "模組化濾芯自動清潔", "適合多點投料需求"], image: "vacuum.png" },
+  { id: "vacuum", cat: "特色添加系統", title: "雙段添加料劑", subtitle: "解決正壓管路加料難題", Graphic: MachineryGraphics.VacuumConveyor, advantages: ["解決正壓管路中加料困難", "解決管路背壓排放問題", "雙段氣鎖結構確保壓力穩定", "避免物料在加料口發生倒噴"], image: "vacuum.png" },
   { id: "mixer", cat: "2. 輸送 (Conveying)", title: "螺旋輸送機含攪拌機", subtitle: "輸送與均化一體化方案", Graphic: MachineryGraphics.ScrewConveyor, advantages: ["輸送與攪拌同步完成", "有效防止粉體架橋", "結構緊湊節省空間", "支援模組化長度擴展"], image: "mixer.png" },
   { id: "diverter", cat: "2. 輸送 (Conveying)", title: "雙路切換閥", subtitle: "多路徑流道切換裝置", Graphic: MachineryGraphics.DiverterValve, advantages: ["平滑內壁無死角", "氣動快速切換", "極低物料殘留", "耐磨損不鏽鋼閥瓣"], image: "diverter.png" },
   { id: "metering", cat: "3. 製程 (Processing)", title: "計量桶 (Metering Tank)", subtitle: "精準配比之核心工藝", Graphic: MachineryGraphics.MeteringTank, advantages: ["超高計量精度 (1/1000)", "支援 50L 至 1000L", "全不鏽鋼潔淨設計", "易於連結自動控制系統"], image: "metering.png" },
@@ -102,7 +145,7 @@ const initialProductsRaw: Product[] = [
   { id: "dust", cat: "4. 環境 (Environmental)", title: "集塵機 (Dust Collector)", subtitle: "維護產線潔淨與安全", Graphic: MachineryGraphics.DustCollector, advantages: ["多層高效過濾濾材", "氣動脈衝自動清灰", "高效能渦輪穩定吸力", "模組化易維護結構"], image: "dust.png" },
   { id: "control_panel", cat: "5. 自動化 (Automation)", title: "智慧中央控制盤", subtitle: "Industrial PLC & HMI System", Graphic: MachineryGraphics.ControlPanel, advantages: ["PLC 邏輯程序自動化控制", "HMI 直觀人機圖形介面", "支援遠端監控與大數據分析", "符合 CE/UL 工業配線標準"], image: "control_panel.png" },
   { id: "pipeline_analysis", cat: "6. 工程服務 (Engineering)", title: "管路壓力與流場分析", subtitle: "Advanced CFD Flow Simulation", Graphic: MachineryGraphics.PipelineAnalysis, advantages: ["精準模擬氣固兩相流運動", "預測管路易磨損與死角區域", "最佳化風量與輸送壓降", "大幅降低堵料風險與能耗"], image: "pipeline_analysis.png" },
-  { id: "platform", cat: "7. 整合 (Integration)", title: "客製化設備鋼構架台", subtitle: "穩固系統的基礎基石", Graphic: MachineryGraphics.StructuralPlatform, advantages: ["依廠房空間量身打造", "高強度鋼材確保載重安全", "模組化設計快速安裝", "整合多項設備之基礎架構"], image: "platform.png" }
+  { id: "platform", cat: "7.整合 (Integration)", title: "客製化設備鋼構架台", subtitle: "穩固系統的基礎基石", Graphic: MachineryGraphics.StructuralPlatform, advantages: ["依廠房空間量身打造", "高強度鋼材確保載重安全", "模組化設計快速安裝", "整合多項設備之基礎架構"], image: "platform.png" }
 ];
 
 const workflowSteps = [
@@ -147,9 +190,9 @@ const App: React.FC = () => {
         <div className="container mx-auto px-6 flex justify-between items-center">
           <div className="flex items-center gap-4 cursor-pointer group" onClick={() => window.scrollTo({top:0, behavior:'smooth'})}>
             <Logo className="w-10 h-10 transition-transform group-hover:scale-110" />
-            <div className="flex flex-col">
+            <div className="flex flex-col text-left">
               <span className="font-black text-xl text-blue-900 leading-tight tracking-tighter uppercase">錕興機械</span>
-              <span className="text-[8px] font-bold tracking-[0.2em] text-blue-500 uppercase">Kun Xing Industrial</span>
+              <span className="text-[10px] font-bold tracking-[0.2em] text-blue-500 uppercase">PANSKO</span>
             </div>
           </div>
           <div className="hidden md:flex gap-10 text-[10px] font-black uppercase tracking-widest text-slate-500 items-center">
@@ -161,34 +204,37 @@ const App: React.FC = () => {
         </div>
       </nav>
 
-      {/* 英雄區塊 */}
-      <header className="relative pt-32 pb-24 overflow-hidden bg-white border-b border-slate-200">
-        <div className="container mx-auto px-6 grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-          <motion.div initial={{ opacity: 0, x: -30 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.8 }}>
+      {/* 英雄區塊 (更新後) */}
+      <header className="relative pt-32 pb-20 overflow-hidden bg-slate-50 border-b border-slate-200">
+        <div className="container mx-auto px-6 grid grid-cols-1 xl:grid-cols-12 gap-12 items-center">
+          <motion.div initial={{ opacity: 0, x: -30 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.8 }} className="xl:col-span-5 text-left">
             <div className="inline-flex items-center gap-2 px-4 py-2 bg-blue-50 text-blue-600 rounded-2xl text-[10px] font-black uppercase tracking-widest border border-blue-100 mb-8">
-              <Star size={14} className="fill-blue-600" /> 業界領先粉體輸送專家
+              <Star size={14} className="fill-blue-600" /> 您的挑戰，我們的專業承諾
             </div>
-            <h1 className="text-6xl lg:text-8xl font-black mb-8 leading-[0.85] tracking-tighter text-slate-950 uppercase italic">
+            <h1 className="text-6xl lg:text-7xl font-black mb-8 leading-[1.1] tracking-tighter text-slate-950 uppercase italic">
               智慧粉體<br/><span className="text-blue-600">自動化控制</span>
             </h1>
-            <p className="text-xl text-slate-600 mb-10 font-medium leading-relaxed max-w-lg">
-              錕興機械專注於高效率氣體輸送與精密計量控制，為全球工業客戶提供無塵、智能、精準的整廠方案。
+            <p className="text-lg text-slate-600 mb-10 font-medium leading-relaxed max-w-lg">
+              面對繁複的輸送挑戰，PANSKO 提供的不只是設備，而是經由深入分析後量身打造的穩定產線解決方案。
             </p>
-            <div className="flex gap-6">
+            <div className="flex flex-wrap gap-4">
               <button onClick={() => scrollTo('products')} className="px-10 py-5 bg-slate-900 text-white font-black rounded-2xl hover:bg-slate-800 shadow-xl transition-all flex items-center gap-3 group">
-                瀏覽目錄 <ArrowRight size={20} className="group-hover:translate-x-1" />
+                瀏覽產品目錄 <ArrowRight size={20} className="group-hover:translate-x-1" />
               </button>
-              <button onClick={() => scrollTo('workflow')} className="px-10 py-5 bg-white text-slate-900 border border-slate-200 font-black rounded-2xl hover:bg-slate-50 transition-all flex items-center gap-3">
-                服務流程 <Settings size={20} />
+              <button onClick={() => scrollTo('contact')} className="px-10 py-5 bg-white text-slate-900 border border-slate-200 font-black rounded-2xl hover:bg-slate-50 transition-all flex items-center gap-3">
+                獲取技術諮詢 <PhoneCall size={20} />
               </button>
             </div>
           </motion.div>
           
-          <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.8, delay: 0.2 }} className="relative">
-            <div className="absolute inset-0 bg-blue-600/5 blur-[120px] rounded-full scale-110"></div>
-            <div className="relative aspect-square bg-slate-50 rounded-[4rem] border border-slate-100 shadow-2xl flex items-center justify-center p-12 overflow-hidden">
-               <img src={`${IMAGE_BASE}infeed.png`} alt="Feature" className="max-w-full max-h-full object-contain drop-shadow-2xl" />
-            </div>
+          <motion.div 
+            initial={{ opacity: 0, scale: 0.95 }} 
+            animate={{ opacity: 1, scale: 1 }} 
+            transition={{ duration: 0.8, delay: 0.2 }} 
+            className="xl:col-span-7"
+          >
+            {/* 更換原本圖片為挑戰與承諾視覺元件 */}
+            <ChallengeCommitmentGraphic />
           </motion.div>
         </div>
       </header>
@@ -197,7 +243,7 @@ const App: React.FC = () => {
       <section id="products" className="py-24 relative z-10">
         <div className="container mx-auto px-6">
           <div className="text-center mb-20">
-            <h2 className="text-4xl font-black text-slate-900 mb-4 tracking-tighter uppercase italic">產品與設備清單</h2>
+            <h2 className="text-4xl font-black text-slate-900 mb-4 tracking-tighter uppercase italic">精選設備與方案</h2>
             <div className="w-20 h-1.5 bg-blue-600 mx-auto rounded-full"></div>
           </div>
           <div className="grid grid-cols-1 gap-12 max-w-6xl mx-auto">
@@ -256,7 +302,7 @@ const App: React.FC = () => {
       <section id="workflow" className="py-24 bg-slate-900 text-white relative overflow-hidden">
         <div className="container mx-auto px-6 relative z-10">
           <div className="text-center mb-20">
-            <h2 className="text-4xl font-black mb-4 tracking-tighter uppercase italic">自動化控制流程</h2>
+            <h2 className="text-4xl font-black mb-4 tracking-tighter uppercase italic">標準自動化流程</h2>
             <p className="text-slate-400 font-medium">從規畫到安裝，我們為您把關每一個細節</p>
             <div className="w-20 h-1.5 bg-blue-500 mx-auto rounded-full mt-6"></div>
           </div>
@@ -295,12 +341,12 @@ const App: React.FC = () => {
             <div className="flex flex-col items-start">
               <div className="flex items-center gap-4 mb-8">
                 <Logo className="w-12 h-12" />
-                <div className="flex flex-col">
+                <div className="flex flex-col text-left">
                   <span className="font-black text-2xl text-white tracking-tighter uppercase">錕興機械</span>
-                  <span className="text-[10px] font-bold tracking-[0.2em] text-blue-500 uppercase">Kun Xing Industrial</span>
+                  <span className="text-[10px] font-bold tracking-[0.2em] text-blue-500 uppercase">PANSKO</span>
                 </div>
               </div>
-              <p className="text-slate-400 text-sm leading-relaxed mb-8 max-w-sm">
+              <p className="text-slate-400 text-sm leading-relaxed mb-8 max-sm-sm">
                 擁有超過二十年的粉體輸送經驗，提供從設計、製造到安裝的完整自動化解決方案。
               </p>
               <div className="flex flex-col gap-3">
@@ -312,11 +358,11 @@ const App: React.FC = () => {
             </div>
 
             {/* 聯絡細節 */}
-            <div className="lg:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-10">
+            <div className="lg:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-10 text-left">
               <div className="space-y-6">
                 <h4 className="text-xs font-black uppercase tracking-[0.3em] text-slate-500 mb-8">聯絡資訊 / Contact</h4>
                 <div className="flex items-start gap-4">
-                  <div className="w-10 h-10 rounded-xl bg-slate-900 border border-slate-800 flex items-center justify-center shrink-0">
+                  <div className="w-10 h-10 rounded-xl bg-slate-900 border border-slate-800 flex items-center justify-center shrink-0 text-left">
                     <Phone size={18} className="text-blue-500" />
                   </div>
                   <div>
@@ -344,7 +390,7 @@ const App: React.FC = () => {
                 </div>
               </div>
 
-              <div className="space-y-6">
+              <div className="space-y-6 text-left">
                 <h4 className="text-xs font-black uppercase tracking-[0.3em] text-slate-500 mb-8">所在地 / Location</h4>
                 <div className="flex items-start gap-4">
                   <div className="w-10 h-10 rounded-xl bg-slate-900 border border-slate-800 flex items-center justify-center shrink-0">
@@ -372,7 +418,7 @@ const App: React.FC = () => {
           
           <div className="pt-10 border-t border-slate-900 text-center">
             <div className="text-[9px] opacity-20 font-black tracking-[0.5em] uppercase">
-              © 2024 KUN XING MACHINERY CO., LTD. ALL RIGHTS RESERVED.
+              © 2024 PANSKO MACHINERY CO., LTD. ALL RIGHTS RESERVED.
             </div>
           </div>
         </div>
@@ -387,7 +433,7 @@ const App: React.FC = () => {
                 <h3 className="text-2xl font-black text-slate-950 uppercase italic tracking-tighter">Images 對應清單</h3>
                 <button onClick={() => setShowExportModal(false)} className="p-3 hover:bg-slate-200 rounded-2xl"><X /></button>
               </div>
-              <div className="p-10 flex-1 overflow-auto bg-slate-50">
+              <div className="p-10 flex-1 overflow-auto bg-slate-50 text-left">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {initialProductsRaw.map(p => (
                     <div key={p.id} className="p-5 bg-white border border-slate-200 rounded-2xl flex justify-between items-center group hover:border-blue-400 transition-all">
