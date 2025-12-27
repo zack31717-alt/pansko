@@ -3,12 +3,12 @@ import React, { useState, useEffect, useRef } from 'react';
 import { 
   Wind, RotateCw, Layers, ArrowRight, Activity, Phone, Mail, CheckCircle2,
   ArrowUp, MapPin, Upload, X, Gauge, Terminal, Database, Download, Copy, Info,
-  Loader2, Image as ImageIcon, FolderOpen, FileCheck, Star
+  Loader2, Image as ImageIcon, FolderOpen, FileCheck, Star, Settings, Truck, ShieldCheck,
+  Layout, PhoneCall, Building2, Printer, Fingerprint, Search, ClipboardCheck, Wrench
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
-const IMAGE_BASE =
-  "https://raw.githubusercontent.com/zack31717-alt/pansko/main/";
+const IMAGE_BASE = "https://raw.githubusercontent.com/zack31717-alt/pansko/main/";
 
 // --- 公司標誌 ---
 const Logo = ({ className = "w-12 h-12" }: { className?: string }) => (
@@ -75,63 +75,50 @@ const MachineryGraphics = {
   )
 };
 
-type ProductGraphic = React.ComponentType;
-
 interface Product {
   id: string;
   cat: string;
   title: string;
   subtitle: string;
-  Graphic: ProductGraphic;
+  Graphic: React.ComponentType;
   advantages: string[];
-  image: string; // 先放檔名，下面會自動補 IMAGE_BASE
+  image: string; 
 }
 
-// 先用「檔名」寫一份原始清單
 const initialProductsRaw: Product[] = [
   { id: "infeed", cat: "1. 進料 (Infeed)", title: "太空包投料站", subtitle: "Bulk Bag Unloading Station", Graphic: MachineryGraphics.BulkBagStation, advantages: ["單人操作節省人力", "全密封防止粉塵外洩", "選配振動器確保流動", "支援多種物料規格"], image: "infeed.png" },
   { id: "hopper", cat: "1. 進料 (Infeed)", title: "手動投料斗", subtitle: "Manual Dumping Station", Graphic: MachineryGraphics.Hopper, advantages: ["人體工學設計", "內置簡易過濾網", "可與集塵系統連動", "不鏽鋼鏡面處理"], image: "hopper.png" },
-
   { id: "conveying_dnu", cat: "2. 輸送 (Conveying)", title: "DNU/SNU 輸送裝置", subtitle: "無背壓氣動輸送革新", Graphic: MachineryGraphics.Venturi, advantages: ["獨特微負壓設計", "可取代傳統迴轉閥", "大幅減少系統背壓", "耐磨損長效運轉"], image: "conveying_dnu.png" },
   { id: "rcu_air", cat: "2. 輸送 (Conveying)", title: "RCU 空氣輸送機", subtitle: "RCU Pneumatic Conveying System", Graphic: MachineryGraphics.RCUAIR, advantages: ["密閉高壓循環技術", "適合長距離穩定輸送", "物料破損率極低", "氣體消耗量低、高節能"], image: "rcu_air.png" },
   { id: "tubular", cat: "2. 輸送 (Conveying)", title: "管鏈輸送機", subtitle: "Tubular Cable & Chain Conveyor", Graphic: MachineryGraphics.TubularConveyor, advantages: ["3D 空間任意佈局", "超低能耗運行", "物料輸送溫和無破損", "完全密閉無粉塵外洩"], image: "tubular.png" },
   { id: "rotary_valve", cat: "2. 輸送 (Conveying)", title: "迴轉閥 (Rotary Valve)", subtitle: "精密氣鎖與定量給料", Graphic: MachineryGraphics.RotaryValve, advantages: ["高氣密性設計", "多種葉片型式可選", "具防咬料保護功能", "耐壓差性能優異"], image: "rotary_valve.png" },
-
   { id: "vacuum", cat: "真空輸送系統", title: "中央真空輸送系統", subtitle: "Central Vacuum Conveying System", Graphic: MachineryGraphics.VacuumConveyor, advantages: ["全密閉管道輸送", "體積小節省空間", "模組化濾芯自動清潔", "適合多點投料需求"], image: "vacuum.png" },
   { id: "mixer", cat: "2. 輸送 (Conveying)", title: "螺旋輸送機含攪拌機", subtitle: "輸送與均化一體化方案", Graphic: MachineryGraphics.ScrewConveyor, advantages: ["輸送與攪拌同步完成", "有效防止粉體架橋", "結構緊湊節省空間", "支援模組化長度擴展"], image: "mixer.png" },
   { id: "diverter", cat: "2. 輸送 (Conveying)", title: "雙路切換閥", subtitle: "多路徑流道切換裝置", Graphic: MachineryGraphics.DiverterValve, advantages: ["平滑內壁無死角", "氣動快速切換", "極低物料殘留", "耐磨損不鏽鋼閥瓣"], image: "diverter.png" },
-
   { id: "metering", cat: "3. 製程 (Processing)", title: "計量桶 (Metering Tank)", subtitle: "精準配比之核心工藝", Graphic: MachineryGraphics.MeteringTank, advantages: ["超高計量精度 (1/1000)", "支援 50L 至 1000L", "全不鏽鋼潔淨設計", "易於連結自動控制系統"], image: "metering.png" },
-  { id: "loss_in_weight", cat: "3. 製程 (Processing)", title: "失重式供料機", subtitle: "Loss-in-Weight Feeder", Graphic: MachineryGraphics.LossInWeight, advantages: ["動態連續稱重補償", "適用於微量精準添加", "全封閉防干擾結構", "數位化智慧控制界面"], image: "loss_in_weight.png" },
+  { id: "loss_in_weight", cat: "3. 製程 (Processing)", title: "失重式供料機", subtitle: "Loss-in-Weight Feeder", Graphic: MachineryGraphics.LossInWeight, advantages: ["動態連續稱重補償", "適用於微量精準添加", "數位化智慧控制界面", "高穩定性負載元"], image: "loss_in_weight.png" },
   { id: "cyclone", cat: "3. 製程 (Processing)", title: "旋風分離器", subtitle: "高效氣粉分離組件", Graphic: MachineryGraphics.Cyclone, advantages: ["去除 5~10μm 以上粉塵", "無活動部件維護極簡", "耐高溫高壓適合惡劣環境", "作為輸送末端氣固分離"], image: "cyclone.png" },
   { id: "screen", cat: "3. 製程 (Processing)", title: "高效振動篩", subtitle: "物料分級與雜質過濾", Graphic: MachineryGraphics.VibratingScreen, advantages: ["多層篩網同時作業", "低噪音高性能電機", "密封設計防止粉塵擴散", "快速拆裝清洗方便"], image: "screen.png" },
-
   { id: "dust", cat: "4. 環境 (Environmental)", title: "集塵機 (Dust Collector)", subtitle: "維護產線潔淨與安全", Graphic: MachineryGraphics.DustCollector, advantages: ["多層高效過濾濾材", "氣動脈衝自動清灰", "高效能渦輪穩定吸力", "模組化易維護結構"], image: "dust.png" },
   { id: "control_panel", cat: "5. 自動化 (Automation)", title: "智慧中央控制盤", subtitle: "Industrial PLC & HMI System", Graphic: MachineryGraphics.ControlPanel, advantages: ["PLC 邏輯程序自動化控制", "HMI 直觀人機圖形介面", "支援遠端監控與大數據分析", "符合 CE/UL 工業配線標準"], image: "control_panel.png" },
-
   { id: "pipeline_analysis", cat: "6. 工程服務 (Engineering)", title: "管路壓力與流場分析", subtitle: "Advanced CFD Flow Simulation", Graphic: MachineryGraphics.PipelineAnalysis, advantages: ["精準模擬氣固兩相流運動", "預測管路易磨損與死角區域", "最佳化風量與輸送壓降", "大幅降低堵料風險與能耗"], image: "pipeline_analysis.png" },
-  { id: "platform", cat: "7.整合 (Integration)", title: "客製化設備鋼構架台", subtitle: "穩固系統的基礎基石", Graphic: MachineryGraphics.StructuralPlatform, advantages: ["依廠房空間量身打造", "高強度鋼材確保載重安全", "模組化設計快速安裝", "整合多項設備之基礎架構"], image: "platform.png" }
+  { id: "platform", cat: "7. 整合 (Integration)", title: "客製化設備鋼構架台", subtitle: "穩固系統的基礎基石", Graphic: MachineryGraphics.StructuralPlatform, advantages: ["依廠房空間量身打造", "高強度鋼材確保載重安全", "模組化設計快速安裝", "整合多項設備之基礎架構"], image: "platform.png" }
 ];
 
-// 再把檔名補成完整 URL
-const initialProducts: Product[] = initialProductsRaw.map(p => ({
-  ...p,
-  image: /^https?:\/\//i.test(p.image) ? p.image : `${IMAGE_BASE}${p.image}`,
-}));
+const workflowSteps = [
+  { id: 1, title: "需求分析與對接", desc: "深入了解物料特性與現場空間限制", icon: Search },
+  { id: 2, title: "系統規劃設計", desc: "CAD 繪圖與 3D 模擬最佳化輸送路徑", icon: Layout },
+  { id: 3, title: "精密製造組裝", desc: "工廠內部高標準生產與組件測試", icon: Settings },
+  { id: 4, title: "現場施工安裝", desc: "專業工程師到場定位、接管與配線", icon: Truck },
+  { id: 5, title: "測試調試維護", desc: "系統連動測試、人員培訓與定期保養", icon: Wrench },
+];
 
 const App: React.FC = () => {
   const [isScrolled, setIsScrolled] = useState(false);
-  const [productImages, setProductImages] = useState<Record<string, string>>({});
   const [imageLoadErrors, setImageLoadErrors] = useState<Record<string, number>>({});
   const [showExportModal, setShowExportModal] = useState(false);
-  const fileInputRef = useRef<HTMLInputElement>(null);
-  const [activeUploadId, setActiveUploadId] = useState<string | null>(null);
 
   useEffect(() => {
-    const saved = localStorage.getItem('kx_product_images');
-    if (saved) {
-      try { setProductImages(JSON.parse(saved)); } catch (e) { console.error("Load failed"); }
-    }
     const handleScroll = () => setIsScrolled(window.scrollY > 50);
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
@@ -141,36 +128,11 @@ const App: React.FC = () => {
     setImageLoadErrors(prev => ({ ...prev, [id]: (prev[id] || 0) + 1 }));
   };
 
- const isHttpUrl = (s: string) => /^https?:\/\//i.test(s);
-
-const getSource = (p: Product) => {
-  // 1️⃣ 使用者有上傳圖片（base64）→ 最高優先
-  if (productImages[p.id]) return productImages[p.id];
-
-  // 2️⃣ image 是 GitHub raw 的完整網址
-  if (isHttpUrl(p.image)) return p.image;
-
-  // 3️⃣ 保底
-  return null;
-};
-
-  const triggerUpload = (id: string) => {
-    setActiveUploadId(id);
-    if (fileInputRef.current) fileInputRef.current.click();
-  };
-
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file && activeUploadId) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        const base64 = reader.result as string;
-        const next = { ...productImages, [activeUploadId]: base64 };
-        setProductImages(next);
-        localStorage.setItem('kx_product_images', JSON.stringify(next));
-      };
-      reader.readAsDataURL(file);
-    }
+  const getSource = (p: Product) => {
+    const count = imageLoadErrors[p.id] || 0;
+    const base = p.image;
+    if (count >= 3) return null;
+    return `${IMAGE_BASE}${base}`;
   };
 
   const scrollTo = (id: string) => {
@@ -178,14 +140,9 @@ const getSource = (p: Product) => {
     if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
   };
 
-  const infeedProduct = initialProducts.find(p => p.id === 'infeed')!;
-  const jumboSrc = getSource(infeedProduct);
-
   return (
     <div className="min-h-screen bg-slate-50 font-sans text-slate-900 antialiased selection:bg-blue-100">
-      <input type="file" ref={fileInputRef} className="hidden" accept="image/*" onChange={handleFileChange} />
-
-      {/* 導航列 */}
+      {/* 導覽列 */}
       <nav className={`fixed top-0 w-full z-50 transition-all duration-500 ${isScrolled ? 'bg-white/95 backdrop-blur-md py-3 border-b border-slate-200 shadow-sm' : 'bg-transparent py-6'}`}>
         <div className="container mx-auto px-6 flex justify-between items-center">
           <div className="flex items-center gap-4 cursor-pointer group" onClick={() => window.scrollTo({top:0, behavior:'smooth'})}>
@@ -197,83 +154,56 @@ const getSource = (p: Product) => {
           </div>
           <div className="hidden md:flex gap-10 text-[10px] font-black uppercase tracking-widest text-slate-500 items-center">
              <button onClick={() => scrollTo('products')} className="hover:text-blue-600 transition-colors">產品目錄</button>
+             <button onClick={() => scrollTo('workflow')} className="hover:text-blue-600 transition-colors">服務流程</button>
              <button onClick={() => setShowExportModal(true)} className="hover:text-blue-600 transition-colors">檔名指南</button>
              <button onClick={() => scrollTo('contact')} className="bg-blue-600 text-white px-8 py-3 rounded-full text-xs shadow-lg shadow-blue-600/20 hover:bg-blue-700 hover:-translate-y-0.5 transition-all">聯絡專家</button>
           </div>
         </div>
       </nav>
 
-      {/* 英雄區塊與 Jumbo 展示 */}
+      {/* 英雄區塊 */}
       <header className="relative pt-32 pb-24 overflow-hidden bg-white border-b border-slate-200">
         <div className="container mx-auto px-6 grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
           <motion.div initial={{ opacity: 0, x: -30 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.8 }}>
             <div className="inline-flex items-center gap-2 px-4 py-2 bg-blue-50 text-blue-600 rounded-2xl text-[10px] font-black uppercase tracking-widest border border-blue-100 mb-8">
-              <Star size={14} className="fill-blue-600" /> 年度旗艦產品
+              <Star size={14} className="fill-blue-600" /> 業界領先粉體輸送專家
             </div>
             <h1 className="text-6xl lg:text-8xl font-black mb-8 leading-[0.85] tracking-tighter text-slate-950 uppercase italic">
-              智慧粉體<br/><span className="text-blue-600">輸送方案</span>
+              智慧粉體<br/><span className="text-blue-600">自動化控制</span>
             </h1>
             <p className="text-xl text-slate-600 mb-10 font-medium leading-relaxed max-w-lg">
-              錕興機械專注於高效率氣體輸送與自動化控制，為您打造無塵、智能、精準的製程環境。
+              錕興機械專注於高效率氣體輸送與精密計量控制，為全球工業客戶提供無塵、智能、精準的整廠方案。
             </p>
             <div className="flex gap-6">
               <button onClick={() => scrollTo('products')} className="px-10 py-5 bg-slate-900 text-white font-black rounded-2xl hover:bg-slate-800 shadow-xl transition-all flex items-center gap-3 group">
                 瀏覽目錄 <ArrowRight size={20} className="group-hover:translate-x-1" />
               </button>
-              <button onClick={() => setShowExportModal(true)} className="px-10 py-5 bg-white text-slate-900 border border-slate-200 font-black rounded-2xl hover:bg-slate-50 transition-all flex items-center gap-3">
-                檔名指南 <FileCheck size={20} />
+              <button onClick={() => scrollTo('workflow')} className="px-10 py-5 bg-white text-slate-900 border border-slate-200 font-black rounded-2xl hover:bg-slate-50 transition-all flex items-center gap-3">
+                服務流程 <Settings size={20} />
               </button>
             </div>
           </motion.div>
-
-          {/* Jumbo Product Image */}
-          <motion.div 
-            initial={{ opacity: 0, scale: 0.9 }} 
-            animate={{ opacity: 1, scale: 1 }} 
-            transition={{ duration: 0.8, delay: 0.2 }}
-            className="relative group"
-          >
+          
+          <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.8, delay: 0.2 }} className="relative">
             <div className="absolute inset-0 bg-blue-600/5 blur-[120px] rounded-full scale-110"></div>
-            <div 
-              onClick={() => triggerUpload('infeed')}
-              className="relative aspect-square bg-slate-50 rounded-[4rem] border border-slate-100 shadow-2xl flex items-center justify-center p-12 overflow-hidden cursor-pointer hover:border-blue-200 transition-all"
-            >
-              {jumboSrc ? (
-                <img 
-                  key={`jumbo-${imageLoadErrors['infeed']}`}
-                  src={jumboSrc} 
-                  alt="Jumbo Feature" 
-                  onError={() => handleImageError('infeed')}
-                  className="max-w-full max-h-full object-contain drop-shadow-[0_20px_50px_rgba(0,0,0,0.15)] group-hover:scale-105 transition-transform duration-700" 
-                />
-              ) : (
-                <div className="text-center opacity-20">
-                  <MachineryGraphics.BulkBagStation />
-                  <p className="text-xs font-black mt-4 uppercase">找不到 INFEED.png</p>
-                </div>
-              )}
-              <div className="absolute bottom-10 left-10 right-10 flex justify-between items-end">
-                <div className="bg-white/90 backdrop-blur px-6 py-4 rounded-3xl border border-white/50 shadow-xl">
-                  <h4 className="text-xl font-black text-slate-950 leading-tight">太空包投料站</h4>
-                  <p className="text-[10px] font-bold text-blue-600 uppercase tracking-widest mt-1">Bulk Bag Unloading Station</p>
-                </div>
-                <div className="w-16 h-16 bg-blue-600 rounded-2xl shadow-xl flex items-center justify-center text-white">
-                  <Activity size={24} />
-                </div>
-              </div>
+            <div className="relative aspect-square bg-slate-50 rounded-[4rem] border border-slate-100 shadow-2xl flex items-center justify-center p-12 overflow-hidden">
+               <img src={`${IMAGE_BASE}infeed.png`} alt="Feature" className="max-w-full max-h-full object-contain drop-shadow-2xl" />
             </div>
           </motion.div>
         </div>
       </header>
 
-      {/* 產品清單 */}
+      {/* 產品展示區塊 */}
       <section id="products" className="py-24 relative z-10">
         <div className="container mx-auto px-6">
+          <div className="text-center mb-20">
+            <h2 className="text-4xl font-black text-slate-900 mb-4 tracking-tighter uppercase italic">產品與設備清單</h2>
+            <div className="w-20 h-1.5 bg-blue-600 mx-auto rounded-full"></div>
+          </div>
           <div className="grid grid-cols-1 gap-12 max-w-6xl mx-auto">
-            {initialProducts.map((p) => {
+            {initialProductsRaw.map((p) => {
               const src = getSource(p);
-              const errors = imageLoadErrors[p.id] || 0;
-              const isError = errors >= 4; // Only show fallback if all variations fail
+              const isError = (imageLoadErrors[p.id] || 0) >= 3;
 
               return (
                 <motion.div 
@@ -282,13 +212,10 @@ const getSource = (p: Product) => {
                   className="bg-white p-10 lg:p-14 rounded-[3.5rem] border border-slate-200 shadow-xl hover:shadow-2xl hover:border-blue-200 transition-all group overflow-hidden"
                 >
                   <div className="flex flex-col lg:flex-row gap-12 items-center">
-                    <div className="flex-1">
+                    <div className="flex-1 text-left">
                       <div className="flex flex-wrap items-center gap-3 mb-6">
                         <div className="px-4 py-1.5 bg-blue-50 text-blue-600 rounded-full text-[10px] font-black uppercase tracking-widest border border-blue-100">
                           {p.cat}
-                        </div>
-                        <div className="flex items-center gap-1.5 px-3 py-1 bg-slate-50 text-slate-400 rounded-full text-[9px] font-bold border border-slate-100">
-                          <FolderOpen size={10} /> {p.image}
                         </div>
                       </div>
                       <h3 className="text-4xl font-black text-slate-900 mb-4 tracking-tight">{p.title}</h3>
@@ -296,25 +223,18 @@ const getSource = (p: Product) => {
                       <ul className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         {p.advantages.map((adv, i) => (
                           <li key={i} className="flex gap-3 text-slate-600 font-semibold items-start leading-snug">
-                            <CheckCircle2 size={18} className="text-blue-500 mt-0.5" /> 
+                            <CheckCircle2 size={18} className="text-blue-500 mt-0.5 shrink-0" /> 
                             <span>{adv}</span>
                           </li>
                         ))}
                       </ul>
                     </div>
 
-                    <div 
-                      onClick={() => triggerUpload(p.id)} 
-                      className="lg:w-1/2 w-full aspect-square rounded-[2.5rem] bg-slate-50 border-2 border-dashed border-slate-200 flex items-center justify-center p-8 relative overflow-hidden cursor-pointer hover:bg-blue-50 hover:border-blue-300 transition-all"
-                    >
+                    <div className="lg:w-1/2 w-full aspect-square rounded-[2.5rem] bg-slate-50 border border-slate-200 flex items-center justify-center p-8 relative overflow-hidden group">
                       {isError ? (
-                        <div className="text-center opacity-20">
-                          <div className="w-24 h-24 mx-auto mb-4"><p.Graphic /></div>
-                          <p className="text-[10px] font-black uppercase">找不到檔案</p>
-                        </div>
+                        <div className="text-center opacity-20"><p.Graphic /></div>
                       ) : src ? (
                         <img 
-                          key={`${p.id}-${errors}`}
                           src={src} 
                           alt={p.title} 
                           onError={() => handleImageError(p.id)}
@@ -323,9 +243,6 @@ const getSource = (p: Product) => {
                       ) : (
                         <div className="text-center opacity-10"><p.Graphic /></div>
                       )}
-                      <div className="absolute top-4 right-4 bg-white/90 backdrop-blur px-3 py-1 rounded-xl text-[8px] font-bold border border-slate-100 shadow-sm uppercase opacity-40 group-hover:opacity-100 transition-opacity">
-                         {p.image}
-                      </div>
                     </div>
                   </div>
                 </motion.div>
@@ -335,18 +252,129 @@ const getSource = (p: Product) => {
         </div>
       </section>
 
-      {/* 頁尾 */}
-      <footer id="contact" className="py-24 bg-slate-950 text-white">
-        <div className="container mx-auto px-6 text-center">
-          <Logo className="w-20 h-20 mx-auto mb-10 opacity-30" />
-          <h2 className="text-4xl font-black mb-16 tracking-tighter uppercase italic">
-            智慧對接系統 <span className="text-blue-500">·</span> Auto Connect
-          </h2>
-          <div className="flex flex-wrap justify-center gap-10 opacity-40 mb-16 text-xs font-bold tracking-widest uppercase">
-            <div className="flex items-center gap-3"><Phone size={16} /> 03-9908036</div>
-            <div className="flex items-center gap-3"><Mail size={16} /> zack31717@gmail.com</div>
+      {/* 服務流程區塊 */}
+      <section id="workflow" className="py-24 bg-slate-900 text-white relative overflow-hidden">
+        <div className="container mx-auto px-6 relative z-10">
+          <div className="text-center mb-20">
+            <h2 className="text-4xl font-black mb-4 tracking-tighter uppercase italic">自動化控制流程</h2>
+            <p className="text-slate-400 font-medium">從規畫到安裝，我們為您把關每一個細節</p>
+            <div className="w-20 h-1.5 bg-blue-500 mx-auto rounded-full mt-6"></div>
           </div>
-          <div className="text-[9px] opacity-20 font-black tracking-[0.5em] uppercase">© 2024 KUN XING MACHINERY CO., LTD.</div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-5 gap-8 relative">
+            <div className="hidden md:block absolute top-12 left-0 w-full h-0.5 bg-blue-900 -z-10"></div>
+            
+            {workflowSteps.map((step) => (
+              <motion.div 
+                key={step.id}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: step.id * 0.1 }}
+                className="flex flex-col items-center text-center"
+              >
+                <div className="w-24 h-24 rounded-3xl bg-blue-600 flex items-center justify-center mb-6 shadow-xl shadow-blue-600/30 border border-blue-400 group hover:scale-110 transition-transform">
+                  <step.icon size={36} className="text-white" />
+                </div>
+                <div className="bg-slate-800/50 backdrop-blur-sm p-6 rounded-2xl border border-slate-700 h-full">
+                  <div className="text-blue-500 text-[10px] font-black uppercase tracking-[0.2em] mb-2">Step 0{step.id}</div>
+                  <h4 className="text-lg font-bold mb-3">{step.title}</h4>
+                  <p className="text-xs text-slate-400 leading-relaxed font-medium">{step.desc}</p>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* 頁尾與聯絡資訊 */}
+      <footer id="contact" className="py-24 bg-slate-950 text-white border-t border-slate-900 text-left">
+        <div className="container mx-auto px-6">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-16 mb-20">
+            {/* 公司簡介 */}
+            <div className="flex flex-col items-start">
+              <div className="flex items-center gap-4 mb-8">
+                <Logo className="w-12 h-12" />
+                <div className="flex flex-col">
+                  <span className="font-black text-2xl text-white tracking-tighter uppercase">錕興機械</span>
+                  <span className="text-[10px] font-bold tracking-[0.2em] text-blue-500 uppercase">Kun Xing Industrial</span>
+                </div>
+              </div>
+              <p className="text-slate-400 text-sm leading-relaxed mb-8 max-w-sm">
+                擁有超過二十年的粉體輸送經驗，提供從設計、製造到安裝的完整自動化解決方案。
+              </p>
+              <div className="flex flex-col gap-3">
+                <div className="flex items-center gap-3 text-sm font-bold text-blue-500">
+                  <Fingerprint size={18} /> 
+                  <span>統一編號：29113377</span>
+                </div>
+              </div>
+            </div>
+
+            {/* 聯絡細節 */}
+            <div className="lg:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-10">
+              <div className="space-y-6">
+                <h4 className="text-xs font-black uppercase tracking-[0.3em] text-slate-500 mb-8">聯絡資訊 / Contact</h4>
+                <div className="flex items-start gap-4">
+                  <div className="w-10 h-10 rounded-xl bg-slate-900 border border-slate-800 flex items-center justify-center shrink-0">
+                    <Phone size={18} className="text-blue-500" />
+                  </div>
+                  <div>
+                    <div className="text-[10px] text-slate-500 font-bold uppercase tracking-wider mb-1">電話</div>
+                    <div className="text-lg font-bold">03-9908036</div>
+                  </div>
+                </div>
+                <div className="flex items-start gap-4">
+                  <div className="w-10 h-10 rounded-xl bg-slate-900 border border-slate-800 flex items-center justify-center shrink-0">
+                    <Printer size={18} className="text-blue-500" />
+                  </div>
+                  <div>
+                    <div className="text-[10px] text-slate-500 font-bold uppercase tracking-wider mb-1">傳真 (FAX)</div>
+                    <div className="text-lg font-bold">03-9905853</div>
+                  </div>
+                </div>
+                <div className="flex items-start gap-4">
+                  <div className="w-10 h-10 rounded-xl bg-slate-900 border border-slate-800 flex items-center justify-center shrink-0">
+                    <Mail size={18} className="text-blue-500" />
+                  </div>
+                  <div>
+                    <div className="text-[10px] text-slate-500 font-bold uppercase tracking-wider mb-1">電子郵件</div>
+                    <div className="text-lg font-bold">zack31717@gmail.com</div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="space-y-6">
+                <h4 className="text-xs font-black uppercase tracking-[0.3em] text-slate-500 mb-8">所在地 / Location</h4>
+                <div className="flex items-start gap-4">
+                  <div className="w-10 h-10 rounded-xl bg-slate-900 border border-slate-800 flex items-center justify-center shrink-0">
+                    <MapPin size={18} className="text-blue-500" />
+                  </div>
+                  <div>
+                    <div className="text-[10px] text-slate-500 font-bold uppercase tracking-wider mb-1">公司地址</div>
+                    <div className="text-lg font-bold leading-relaxed">
+                      宜蘭縣五結鄉成興村<br/>利工一路二段116巷15號
+                    </div>
+                  </div>
+                </div>
+                <div className="flex items-start gap-4">
+                  <div className="w-10 h-10 rounded-xl bg-slate-900 border border-slate-800 flex items-center justify-center shrink-0">
+                    <Building2 size={18} className="text-blue-500" />
+                  </div>
+                  <div>
+                    <div className="text-[10px] text-slate-500 font-bold uppercase tracking-wider mb-1">工廠</div>
+                    <div className="text-lg font-bold leading-relaxed">利澤工業區生產基地</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <div className="pt-10 border-t border-slate-900 text-center">
+            <div className="text-[9px] opacity-20 font-black tracking-[0.5em] uppercase">
+              © 2024 KUN XING MACHINERY CO., LTD. ALL RIGHTS RESERVED.
+            </div>
+          </div>
         </div>
       </footer>
 
@@ -356,31 +384,17 @@ const getSource = (p: Product) => {
           <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-slate-950/90 backdrop-blur-xl">
             <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }} className="bg-white w-full max-w-4xl max-h-[85vh] rounded-[3.5rem] shadow-2xl flex flex-col overflow-hidden text-left border border-slate-200">
               <div className="p-10 border-b flex justify-between items-center bg-slate-50">
-                <h3 className="text-2xl font-black text-slate-950 uppercase italic tracking-tighter">Images 資料夾對應清單</h3>
+                <h3 className="text-2xl font-black text-slate-950 uppercase italic tracking-tighter">Images 對應清單</h3>
                 <button onClick={() => setShowExportModal(false)} className="p-3 hover:bg-slate-200 rounded-2xl"><X /></button>
               </div>
               <div className="p-10 flex-1 overflow-auto bg-slate-50">
-                <div className="bg-blue-600 text-white p-8 rounded-[2rem] mb-8 shadow-xl shadow-blue-600/20">
-                   <p className="text-lg font-black mb-2 italic">載入機制說明：</p>
-                   <p className="text-sm opacity-90 leading-relaxed font-medium">
-                     系統會嘗試多個路徑以尋找您的圖片：<br/>
-                     1. <span className="font-mono">./images/[檔名].png</span><br/>
-                     2. <span className="font-mono">images/[檔名].png</span><br/>
-                     3. <span className="font-mono">./[檔名].png</span> (根目錄)<br/>
-                     請確保圖片放在 index.html 旁邊的 images 資料夾中。
-                   </p>
-                </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {initialProducts.map(p => (
+                  {initialProductsRaw.map(p => (
                     <div key={p.id} className="p-5 bg-white border border-slate-200 rounded-2xl flex justify-between items-center group hover:border-blue-400 transition-all">
                       <div className="flex flex-col">
                         <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{p.title}</span>
                         <code className="text-sm font-mono font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded mt-1">{p.image}</code>
                       </div>
-                      <Copy size={16} className="text-slate-300 group-hover:text-blue-500 cursor-pointer" onClick={() => {
-                        navigator.clipboard.writeText(p.image);
-                        alert(`已複製: ${p.image}`);
-                      }} />
                     </div>
                   ))}
                 </div>
