@@ -131,7 +131,7 @@ interface Product {
 const initialProductsRaw: Product[] = [
   { id: "infeed", cat: "1. 進料 (Infeed)", title: "太空包投料站", subtitle: "Bulk Bag Unloading Station", Graphic: MachineryGraphics.BulkBagStation, advantages: ["單人操作節省人力", "全密封防止粉塵外洩", "選配振動器確保流動", "支援多種物料規格"], image: "infeed.png" },
   { id: "hopper", cat: "1. 進料 (Infeed)", title: "手動投料斗", subtitle: "Manual Dumping Station", Graphic: MachineryGraphics.Hopper, advantages: ["人體工學設計", "內置簡易過濾網", "可與集塵系統連動", "不鏽鋼鏡面處理"], image: "hopper.png" },
-  { id: "conveying_dnu", cat: "2. 輸送 (Conveying)", title: "DNU/SNU 輸送裝置", subtitle: "無背壓氣動輸送革新", Graphic: MachineryGraphics.Venturi, advantages: ["獨特微負壓設計", "可取代傳統迴轉閥", "大幅減少系統背壓", "耐磨損長效運轉"], image: "conveying_dnu.png" },
+  { id: "conveying_dnu", cat: "2. 輸送 (Conveying)", title: "高效型SNU風環吸送裝置", subtitle: "無背壓氣動輸送革新", Graphic: MachineryGraphics.Venturi, advantages: ["獨特微負壓設計", "可取代傳統迴轉閥", "提升DILUTE效能", "輸送距離提升", "4T~6T/HR 輸送量"], image: "conveying_dnu.png" },
   { id: "rcu_air", cat: "2. 輸送 (Conveying)", title: "RCU 空氣輸送機", subtitle: "RCU Pneumatic Conveying System", Graphic: MachineryGraphics.RCUAIR, advantages: ["密閉高壓循環技術", "適合長距離穩定輸送", "物料破損率極低", "氣體消耗量低、高節能"], image: "rcu_air.png" },
   { id: "tubular", cat: "2. 輸送 (Conveying)", title: "管鏈輸送機", subtitle: "Tubular Cable & Chain Conveyor", Graphic: MachineryGraphics.TubularConveyor, advantages: ["3D 空間任意佈局", "超低能耗運行", "物料輸送溫和無破損", "完全密閉無粉塵外洩"], image: "tubular.png" },
   { id: "rotary_valve", cat: "2. 輸送 (Conveying)", title: "迴轉閥 (Rotary Valve)", subtitle: "精密氣鎖與定量給料", Graphic: MachineryGraphics.RotaryValve, advantages: ["高氣密性設計", "多種葉片型式可選", "具防咬料保護功能", "耐壓差性能優異"], image: "rotary_valve.png" },
@@ -218,6 +218,16 @@ const App: React.FC = () => {
               面對繁複的輸送挑戰，PANSKO 提供的不只是設備，而是經由深入分析後量身打造的穩定產線解決方案。
             </p>
            <div className="flex flex-wrap gap-4">
+              {/* 公司介紹 PDF */}
+  <a
+    href="/company--intro.pdf"
+    download
+    className="px-10 py-5 bg-blue-600 text-white font-black rounded-2xl
+               hover:bg-blue-700 shadow-xl transition-all flex items-center gap-3"
+  >
+    公司介紹 <Download size={20} />
+  </a>
+
   <button
     onClick={() => scrollTo('products')}
     className="px-10 py-5 bg-slate-900 text-white font-black rounded-2xl
@@ -243,7 +253,7 @@ const App: React.FC = () => {
     className="px-10 py-5 bg-blue-600 text-white font-black rounded-2xl
                hover:bg-blue-700 transition-all flex items-center gap-3"
   >
-    下載型錄 PDF
+    工程及系統
     <Download size={20} />
   </a>
 
@@ -401,7 +411,7 @@ const App: React.FC = () => {
                   </div>
                   <div>
                     <div className="text-[10px] text-slate-500 font-bold uppercase tracking-wider mb-1">電話</div>
-                    <div className="text-lg font-bold">03-9908036</div>
+                    <div className="text-lg font-bold">03-9908036<br/>+8651286176628 昆山碧興機械有限公司</div>
                   </div>
                 </div>
                 <div className="flex items-start gap-4">
@@ -410,7 +420,7 @@ const App: React.FC = () => {
                   </div>
                   <div>
                     <div className="text-[10px] text-slate-500 font-bold uppercase tracking-wider mb-1">傳真 (FAX)</div>
-                    <div className="text-lg font-bold">03-9905853</div>
+                    <div className="text-lg font-bold">03-9905853<br/>+8651286176629 昆山碧興機械有限公司</div>
                   </div>
                 </div>
                 <div className="flex items-start gap-4">
@@ -433,7 +443,7 @@ const App: React.FC = () => {
                   <div>
                     <div className="text-[10px] text-slate-500 font-bold uppercase tracking-wider mb-1">公司地址</div>
                     <div className="text-lg font-bold leading-relaxed">
-                      宜蘭縣五結鄉成興村<br/>利工一路二段116巷15號
+                      錕興機械有限公司<br/>宜蘭縣五結鄉成興村<br/>利工一路二段116巷15號<br/>昆山碧興機械有限公司<br/>江蘇省昆山市開發區春旭路18號<br/>聯彩商務中心504室
                     </div>
                   </div>
                 </div>
@@ -443,7 +453,7 @@ const App: React.FC = () => {
                   </div>
                   <div>
                     <div className="text-[10px] text-slate-500 font-bold uppercase tracking-wider mb-1">工廠</div>
-                    <div className="text-lg font-bold leading-relaxed">利澤工業區生產基地</div>
+                    <div className="text-lg font-bold leading-relaxed">利澤工業區<br/>江蘇省昆山市</div>
                   </div>
                 </div>
               </div>
