@@ -220,7 +220,7 @@ const App: React.FC = () => {
            <div className="flex flex-wrap gap-4">
               {/* 公司介紹 PDF */}
   <a
-    href="/company--intro.pdf"
+    href="/company-intro.pdf"
     download
     className="px-10 py-5 bg-blue-600 text-white font-black rounded-2xl
                hover:bg-blue-700 shadow-xl transition-all flex items-center gap-3"
@@ -239,8 +239,8 @@ const App: React.FC = () => {
 
   <button
     onClick={() => scrollTo('contact')}
-    className="px-10 py-5 bg-white text-slate-900 border border-slate-200 font-black rounded-2xl
-               hover:bg-slate-50 transition-all flex items-center gap-3"
+    className="px-10 py-5 bg-blue-600 text-white font-black rounded-2xl
+               hover:bg-blue-700 shadow-xl transition-all flex items-center gap-3"
   >
     獲取技術諮詢
     <PhoneCall size={20} />
@@ -250,8 +250,9 @@ const App: React.FC = () => {
   <a
     href="/kunhing-catalog.pdf"
     download
-    className="px-10 py-5 bg-blue-600 text-white font-black rounded-2xl
-               hover:bg-blue-700 transition-all flex items-center gap-3"
+    className="px-10 py-5 bg-slate-900 text-white font-black rounded-2xl
+             hover:bg-slate-800 shadow-xl transition-all
+             flex items-center gap-3"
   >
     工程及系統
     <Download size={20} />
@@ -261,8 +262,9 @@ const App: React.FC = () => {
   <a
     href="/company-performance.pdf"
     download
-    className="px-10 py-5 bg-white text-slate-900 border border-slate-200 font-black rounded-2xl
-               hover:bg-slate-50 transition-all flex items-center gap-3"
+    className="px-10 py-5 bg-slate-900 text-white font-black rounded-2xl
+             hover:bg-slate-800 shadow-xl transition-all
+             flex items-center gap-3"
   >
     公司實績表
     <Download size={20} />
