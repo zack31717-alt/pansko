@@ -217,30 +217,48 @@ const App: React.FC = () => {
             <p className="text-lg text-slate-600 mb-10 font-medium leading-relaxed max-w-lg">
               面對繁複的輸送挑戰，PANSKO 提供的不只是設備，而是經由深入分析後量身打造的穩定產線解決方案。
             </p>
-            <div className="flex flex-wrap gap-4">
+           <div className="flex flex-wrap gap-4">
   <button
     onClick={() => scrollTo('products')}
-    className="px-10 py-5 bg-slate-900 text-white font-black rounded-2xl hover:bg-slate-800 shadow-xl transition-all flex items-center gap-3 group"
+    className="px-10 py-5 bg-slate-900 text-white font-black rounded-2xl
+               hover:bg-slate-800 shadow-xl transition-all flex items-center gap-3 group"
   >
-    瀏覽產品目錄 <ArrowRight size={20} className="group-hover:translate-x-1" />
+    瀏覽產品目錄
+    <ArrowRight size={20} className="group-hover:translate-x-1" />
   </button>
 
   <button
     onClick={() => scrollTo('contact')}
-    className="px-10 py-5 bg-white text-slate-900 border border-slate-200 font-black rounded-2xl hover:bg-slate-50 transition-all flex items-center gap-3"
+    className="px-10 py-5 bg-white text-slate-900 border border-slate-200 font-black rounded-2xl
+               hover:bg-slate-50 transition-all flex items-center gap-3"
   >
-    獲取技術諮詢 <PhoneCall size={20} />
+    獲取技術諮詢
+    <PhoneCall size={20} />
   </button>
 
+  {/* 型錄下載 */}
   <a
     href="/kunhing-catalog.pdf"
-    target="_blank"
-    rel="noopener noreferrer"
-    className="px-10 py-5 bg-blue-600 text-white font-black rounded-2xl hover:bg-blue-700 shadow-xl shadow-blue-600/20 transition-all flex items-center gap-3"
+    download
+    className="px-10 py-5 bg-blue-600 text-white font-black rounded-2xl
+               hover:bg-blue-700 transition-all flex items-center gap-3"
   >
-    下載型錄 PDF <Download size={20} />
+    下載型錄 PDF
+    <Download size={20} />
+  </a>
+
+  {/* 公司實績表下載 */}
+  <a
+    href="/company-performance.pdf"
+    download
+    className="px-10 py-5 bg-white text-slate-900 border border-slate-200 font-black rounded-2xl
+               hover:bg-slate-50 transition-all flex items-center gap-3"
+  >
+    公司實績表
+    <Download size={20} />
   </a>
 </div>
+
           </motion.div>
           
           <motion.div 
