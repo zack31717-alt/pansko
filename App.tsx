@@ -462,11 +462,19 @@ const App: React.FC = () => {
             </div>
           </div>
           
-          <div className="pt-10 border-t border-slate-900 text-center">
-            <div className="text-[9px] opacity-20 font-black tracking-[0.5em] uppercase">
-              © 2024 PANSKO MACHINERY CO., LTD. ALL RIGHTS RESERVED.
-            </div>
-          </div>
+          <div className="pt-10 border-t border-slate-900 text-center space-y-3">
+  <div className="text-[9px] opacity-20 font-black tracking-[0.5em] uppercase">
+    © 2024 PANSKO MACHINERY CO., LTD. ALL RIGHTS RESERVED.
+  </div>
+
+  {/* 隱藏入口：不想太顯眼就維持低透明 */}
+  <a
+    href="/#/erp"
+    className="inline-block text-[10px] font-bold opacity-20 hover:opacity-60 transition"
+  >
+    ERP
+  </a>
+</div>
         </div>
       </footer>
 
