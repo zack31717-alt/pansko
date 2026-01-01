@@ -7,12 +7,27 @@ type StockRow = {
   name: string;
   spec: string | null;
   unit: string | null;
+  safety_stock: number;
   stock: number;
+  is_low: boolean;
 };
 
+type MoveRow = {
+  id: string;
+  created_at: string;
+  product_id: string;
+  sku: string | null;
+  name: string;
+  spec: string | null;
+  qty: number;
+  note: string | null;
+  
+};
 export default function ErpPage() {
-      const [authed, setAuthed] = useState(false);
+  const [authed, setAuthed] = useState(false);
   const [pw, setPw] = useState("");
+  const [moves, setMoves] = useState<MoveRow[]>([]);
+  const [loadingMoves, setLoadingMoves] = useState(false);
 
   useEffect(() => {
     if (localStorage.getItem("erp_authed") === "1") setAuthed(true);
@@ -22,14 +37,14 @@ export default function ErpPage() {
   const [loading, setLoading] = useState(true);
 
   // 🔍 搜尋關鍵字（如果你還沒加）
-
+  const [onlyLow, setOnlyLow] = useState(false);
   const [q, setQ] = useState("");
   const [showLowOnly, setShowLowOnly] = useState(false); // 只看低庫存
   const [history, setHistory] = useState<any[]>([]);
   const [historyLimit, setHistoryLimit] = useState(50); // 先顯示50筆
   const filteredRows = useMemo(() => {
   const kw = q.trim().toLowerCase();
-  let out: StockRow[] = rows;
+  let out = rows;
 
   if (kw) {
     out = out.filter(r =>
@@ -37,8 +52,14 @@ export default function ErpPage() {
       r.name.toLowerCase().includes(kw)
     );
   }
+
+  if (onlyLow) {
+    out = out.filter(r => r.is_low);
+  }
+
   return out;
-}, [rows, q]);
+}, [rows, q, onlyLow]);
+
 
 
   // 新增產品
@@ -52,20 +73,32 @@ const [editSpec, setEditSpec] = useState("");
 const [editUnit, setEditUnit] = useState("pcs");
 
   // 異動
-  const [selectedId, setSelectedId] = useState<string>("");
-  const [moveQty, setMoveQty] = useState<string>("0");
-  const [note, setNote] = useState("");
+const [selectedId, setSelectedId] = useState<string>("");
+const [moveQty, setMoveQty] = useState<string>("0");
+const [note, setNote] = useState("");
 
-  const selected = useMemo(
-    () => rows.find(r => r.id === selectedId),
-    [rows, selectedId]
-  );
-  useEffect(() => {
+// 選取的產品
+const selected = useMemo(
+  () => rows.find(r => r.id === selectedId),
+  [rows, selectedId]
+);
+
+// ✏️ 同步右側編輯欄位
+useEffect(() => {
   if (!selected) return;
   setEditName(selected.name || "");
   setEditSpec(selected.spec || "");
   setEditUnit(selected.unit || "pcs");
 }, [selected]);
+
+// 📜 同步右側歷史紀錄（重點）
+useEffect(() => {
+  if (!authed) return;
+  if (!selectedId) return;
+
+  fetchMoves(selectedId);
+}, [authed, selectedId]);
+
 
   const SAFE_STOCK = 3;
   const isLowStock = (r: StockRow) => {
@@ -116,6 +149,8 @@ const displayRows = useMemo(() => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  
+
   async function addProduct() {
     if (!name.trim()) return alert("請輸入產品名稱");
     const { error } = await supabase.from("products").insert({
@@ -132,6 +167,7 @@ const displayRows = useMemo(() => {
     setUnit("pcs");
     await fetchStock();
   }
+  
 async function saveEdit() {
   if (!selectedId) return alert("請先選一個產品");
   if (!editName.trim()) return alert("名稱不能空");
@@ -150,14 +186,59 @@ async function saveEdit() {
   await fetchStock();
   alert("已更新 ✅");
 }
+async function fetchMoves(productId?: string) {
+  setLoadingMoves(true);
+
+  let q = supabase
+    .from("v_move_history")
+    .select("*")
+    .order("created_at", { ascending: false })
+    .limit(50);
+
+  if (productId) {
+    q = q.eq("product_id", productId);
+  }
+
+  const { data, error } = await q;
+
+  if (error) {
+    alert("讀取歷史紀錄失敗：" + error.message);
+  } else {
+    setMoves((data || []) as MoveRow[]);
+  }
+
+  setLoadingMoves(false);
+}
 
   async function addMove() {
+  if (!selectedId) return alert("請先選一個產品");
 
-    async function deleteProduct(productId: string) {
+  const qty = Number(moveQty);
+  if (!Number.isFinite(qty) || qty === 0)
+    return alert("qty 請輸入非 0 數字");
+
+  const { error } = await supabase
+    .from("inventory_moves")
+    .insert({
+      product_id: selectedId,
+      qty,
+      note: note.trim() || null,
+    });
+
+  if (error) return alert("異動失敗：" + error.message);
+
+  setMoveQty("0");
+  setNote("");
+  await fetchStock();
+}
+
+async function deleteProduct(productId: string) {
   if (!productId) return;
 
   const target = rows.find(r => r.id === productId);
-  const ok = confirm(`確定要刪除產品「${target?.name || ""}」？\n（會連同入出庫紀錄一起刪除）`);
+  const ok = confirm(
+    `確定要刪除產品「${target?.name || ""}」？\n（會連同入出庫紀錄一起刪除）`
+  );
   if (!ok) return;
 
   const { error } = await supabase
@@ -166,32 +247,13 @@ async function saveEdit() {
     .eq("id", productId);
 
   if (error) return alert("刪除失敗：" + error.message);
-
-  // 重新讀取
   setSelectedId("");
   await fetchStock();
 }
-
-      
-    if (!selectedId) return alert("請先選一個產品");
-    const qty = Number(moveQty);
-    if (!Number.isFinite(qty) || qty === 0) return alert("qty 請輸入非 0 數字（入庫正數 / 出庫負數）");
-
-    const { error } = await supabase.from("inventory_moves").insert({
-      product_id: selectedId,
-      qty,
-      note: note.trim() || null,
-    });
-    if (error) return alert("異動失敗：" + error.message);
-
-    setMoveQty("0");
-    setNote("");
-    await fetchStock();
-  }
 if (!authed) {
   return (
     <div className={cls.page}>
-  <div className={cls.wrap}></div>
+      <div className={cls.wrap}>
       <h1 style={{ fontSize: 24, fontWeight: 800, marginBottom: 12 }}>ERP 登入</h1>
       <div style={{ color: "#555", marginBottom: 12 }}>請輸入密碼才可進入</div>
 
@@ -219,6 +281,8 @@ if (!authed) {
         </button>
       </div>
     </div>
+     </div>
+
   );
 }
 
@@ -377,6 +441,33 @@ if (!authed) {
 
             {/* 右：新增 + 異動 */}
             <div style={{ display: "flex", flexDirection: "column", gap: 18 }}>
+
+<div style={{ display: "flex", gap: 10, alignItems: "center", margin: "12px 0" }}>
+  <button
+    onClick={() => setOnlyLow(v => !v)}
+    style={{
+      padding: "8px 12px",
+      borderRadius: 10,
+      border: "1px solid #ccc",
+      background: onlyLow ? "#111" : "white",
+      color: onlyLow ? "white" : "#111",
+      fontWeight: 800,
+      cursor: "pointer",
+    }}
+  >
+    只看低庫存
+  </button>
+
+  <div style={{ color: "#555" }}>
+    低庫存筆數：<b>{rows.filter(r => r.is_low).length}</b>
+  </div>
+</div>
+
+
+
+
+
+
               <Card title="新增產品">
                 <Field label="廠商（可空）">
                   <input value={sku} onChange={e => setSku(e.target.value)} style={input} />
