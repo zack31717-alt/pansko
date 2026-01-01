@@ -28,6 +28,10 @@ export default function ErpPage() {
   const [pw, setPw] = useState("");
   const [moves, setMoves] = useState<MoveRow[]>([]);
   const [loadingMoves, setLoadingMoves] = useState(false);
+    // ✅ inline 編輯 safety_stock
+  const [editingSafeId, setEditingSafeId] = useState<string>(""); 
+  const [safeDraft, setSafeDraft] = useState<string>("");
+
 
   useEffect(() => {
     if (localStorage.getItem("erp_authed") === "1") setAuthed(true);
@@ -49,7 +53,7 @@ export default function ErpPage() {
   if (kw) {
     out = out.filter(r =>
       (r.sku || "").toLowerCase().includes(kw) ||
-      r.name.toLowerCase().includes(kw)
+      (r.name || "").toLowerCase().includes(kw)
     );
   }
 
@@ -100,23 +104,29 @@ useEffect(() => {
 }, [authed, selectedId]);
 
 
-  const SAFE_STOCK = 3;
-  const isLowStock = (r: StockRow) => {
-  return Number(r.stock || 0) < SAFE_STOCK;
+  const DEFAULT_SAFE = 3;
+const isLowStock = (r: StockRow) => {
+  const stock = Number(r.stock || 0);
+  const safe = Number.isFinite(Number(r.safety_stock)) ? Number(r.safety_stock) : DEFAULT_SAFE;
+  return stock < safe;
 };
 const displayRows = useMemo(() => {
   const kw = q.trim().toLowerCase();
   let out = [...rows];
 
-  // 🔍 搜尋（廠商 / 名稱）
+  // 🔍 搜尋
   if (kw) {
     out = out.filter(r =>
       (r.sku || "").toLowerCase().includes(kw) ||
       r.name.toLowerCase().includes(kw)
     );
   }
+  // ✅ 只看低庫存（每品項 safety_stock）
+  if (onlyLow) {
+    out = out.filter(isLowStock);
+  }
 
-  // ⚠️ 低庫存排前面
+  // ⚠️ 低庫存排前面（排序不用動筆數）
   out.sort((a, b) => {
     const aLow = isLowStock(a);
     const bLow = isLowStock(b);
@@ -125,7 +135,7 @@ const displayRows = useMemo(() => {
   });
 
   return out;
-}, [rows, q]);
+}, [rows, q, onlyLow]);
 
 
   async function fetchStock() {
@@ -168,6 +178,35 @@ const displayRows = useMemo(() => {
     await fetchStock();
   }
   
+  async function saveSafetyStock(productId: string, draft: string) {
+  const safe = Number(draft);
+
+  if (!Number.isFinite(safe) || safe < 0) {
+    alert("安全庫存請輸入 0 以上數字");
+    return;
+  }
+
+  const { error } = await supabase
+    .from("products")
+    .update({ safety_stock: safe })
+    .eq("id", productId);
+
+  if (error) {
+    alert("更新安全庫存失敗：" + error.message);
+    return;
+  }
+
+  // ✅ 關閉編輯狀態
+  setEditingSafeId("");
+  setSafeDraft("");
+
+  // ✅ 方式A：直接刷新最簡單
+  await fetchStock();
+
+  // （可選 方式B：不刷新，直接更新 rows 也行，但你目前用 view，刷新最穩）
+}
+
+
 async function saveEdit() {
   if (!selectedId) return alert("請先選一個產品");
   if (!editName.trim()) return alert("名稱不能空");
@@ -230,6 +269,7 @@ async function fetchMoves(productId?: string) {
   setMoveQty("0");
   setNote("");
   await fetchStock();
+  await fetchMoves(selectedId); // ✅ 讓歷史立即更新
 }
 
 async function deleteProduct(productId: string) {
@@ -368,6 +408,7 @@ if (!authed) {
                       <th style={th}>名稱</th>
                       <th style={th}>規格說明</th>
                       <th style={th}>庫存</th>
+                      <th style={th}>安全庫存</th>
                       <th style={th}>單位</th>
                       <th style={th}>刪除</th>
                     </tr>
@@ -382,7 +423,7 @@ if (!authed) {
                           background: 
                           r.id === selectedId
         ? "#eef6ff"                 // 被選取
-        : r.stock < 3
+        : isLowStock(r)
         ? "#fff1f2"                 // 低庫存（淡紅）
         : "white",                  // 正常
                           borderTop: "1px solid #eee",
@@ -404,6 +445,42 @@ if (!authed) {
   </div>
 </td>
                         <td style={td}>{Number(r.stock || 0)}</td>
+                        
+                        <td
+  style={td}
+  onClick={(e) => {
+    e.stopPropagation(); // 不要觸發 row 被選取
+    setEditingSafeId(r.id);
+    setSafeDraft(String(r.safety_stock ?? 0));
+  }}
+>
+  {editingSafeId === r.id ? (
+    <input
+      autoFocus
+      value={safeDraft}
+      onChange={(e) => setSafeDraft(e.target.value)}
+      onClick={(e) => e.stopPropagation()}
+      onKeyDown={(e) => {
+        if (e.key === "Enter") saveSafetyStock(r.id, safeDraft);
+        if (e.key === "Escape") {
+          setEditingSafeId("");
+          setSafeDraft("");
+        }
+      }}
+      onBlur={() => saveSafetyStock(r.id, safeDraft)}
+      style={{
+        width: 80,
+        padding: "6px 8px",
+        borderRadius: 8,
+        border: "1px solid #ccc",
+      }}
+    />
+  ) : (
+    <span style={{ fontWeight: 800 }}>
+      {Number(r.safety_stock || 0)}
+    </span>
+  )}
+</td>
                         <td style={td}>{r.unit || "pcs"}</td>
                         <td style={{ padding: "10px 12px" }}>
     <button
@@ -459,7 +536,7 @@ if (!authed) {
   </button>
 
   <div style={{ color: "#555" }}>
-    低庫存筆數：<b>{rows.filter(r => r.is_low).length}</b>
+   低庫存筆數：<b>{rows.filter(isLowStock).length}</b>
   </div>
 </div>
 
@@ -515,6 +592,79 @@ if (!authed) {
                 </Field>
                 <button onClick={addMove} style={btn}>送出異動</button>
               </Card>
+              <Card title="入庫 / 出庫歷史（近 50 筆）">
+  {!selectedId ? (
+    <div style={{ color: "#666" }}>請先在左邊點選一個產品</div>
+  ) : loadingMoves ? (
+    <div>載入中...</div>
+  ) : moves.length === 0 ? (
+    <div style={{ color: "#666" }}>尚無紀錄</div>
+  ) : (
+    <div style={{ maxHeight: 320, overflow: "auto", display: "flex", flexDirection: "column", gap: 8 }}>
+      {moves.map((m) => (
+        <div
+          key={m.id}
+          style={{
+            border: "1px solid #eee",
+            borderRadius: 12,
+            padding: 10,
+            display: "grid",
+            gridTemplateColumns: "120px 90px 1fr",
+            gap: 10,
+            alignItems: "start",
+            background: "#fff",
+          }}
+        >
+          {/* 時間 */}
+          <div style={{ fontSize: 12, color: "#666", lineHeight: 1.2 }}>
+            {new Date(m.created_at).toLocaleString()}
+          </div>
+
+          {/* qty */}
+          <div
+            style={{
+              fontWeight: 900,
+              color: m.qty >= 0 ? "#16a34a" : "#dc2626", // 入庫綠 / 出庫紅
+              whiteSpace: "nowrap",
+            }}
+          >
+            {m.qty >= 0 ? `入庫 +${m.qty}` : `出庫 ${m.qty}`}
+          </div>
+
+          {/* 內容 */}
+          <div style={{ lineHeight: 1.35 }}>
+            <div style={{ fontWeight: 800 }}>
+              {(m.sku ? `${m.sku} / ` : "") + m.name}
+            </div>
+
+            {m.spec && (
+              <div
+                title={m.spec}
+                style={{
+                  fontSize: 12,
+                  color: "#666",
+                  whiteSpace: "nowrap",
+                  overflow: "hidden",
+                  textOverflow: "ellipsis",
+                  maxWidth: 360,
+                }}
+              >
+                {m.spec}
+              </div>
+            )}
+
+            {m.note && (
+              <div style={{ marginTop: 4, fontSize: 12, color: "#111" }}>
+                備註：{m.note}
+              </div>
+            )}
+          </div>
+        </div>
+      ))}
+    </div>
+  )}
+</Card>
+
 
               <button onClick={fetchStock} style={btnGhost}>重新整理</button>
             </div>
