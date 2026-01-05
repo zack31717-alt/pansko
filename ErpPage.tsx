@@ -3,26 +3,28 @@ import { supabase } from "./supabaseClient";
 
 type StockRow = {
   id: string;
-  sku: string | null;
+  supplier_name: string | null;
   name: string;
   spec: string | null;
   unit: string | null;
   safety_stock: number;
-  stock: number;
+  stock: number | string;
   is_low: boolean;
 };
+
 
 type MoveRow = {
   id: string;
   created_at: string;
   product_id: string;
-  sku: string | null;
+  supplier_name: string | null;
   name: string;
   spec: string | null;
   qty: number;
   note: string | null;
-  
 };
+
+
 export default function ErpPage() {
   const [authed, setAuthed] = useState(false);
   const [pw, setPw] = useState("");
@@ -52,7 +54,7 @@ export default function ErpPage() {
 
   if (kw) {
     out = out.filter(r =>
-      (r.sku || "").toLowerCase().includes(kw) ||
+      (r.supplier_name || "").toLowerCase().includes(kw) ||
       (r.name || "").toLowerCase().includes(kw)
     );
   }
@@ -116,11 +118,13 @@ const displayRows = useMemo(() => {
 
   // 🔍 搜尋
   if (kw) {
-    out = out.filter(r =>
-      (r.sku || "").toLowerCase().includes(kw) ||
-      r.name.toLowerCase().includes(kw)
-    );
-  }
+  out = out.filter(r =>
+    (r.supplier_name || "").toLowerCase().includes(kw) ||
+    (r.name || "").toLowerCase().includes(kw) ||
+    (r.spec || "").toLowerCase().includes(kw)
+  );
+}
+
   // ✅ 只看低庫存（每品項 safety_stock）
   if (onlyLow) {
     out = out.filter(isLowStock);
@@ -197,7 +201,7 @@ const displayRows = useMemo(() => {
   // 2) 新增 products（寫 supplier_id）
   const { error: pErr } = await supabase.from("products").insert({
     // 這裡 sku 你可以先保留舊相容（存廠商名），或改成 null
-    sku: supplierName || null,          // ✅ 先保留（之後你要把 sku 改成真正 SKU 再調整）
+    sku: null,          // ✅ 先保留（之後你要把 sku 改成真正 SKU 再調整）
     supplier_id: supplierId,            // ✅ 新欄位
     name: name.trim(),
     spec: spec.trim() || null,
@@ -468,7 +472,7 @@ if (!authed) {
                           borderTop: "1px solid #eee",
                         }}
                       >
-                        <td style={td}>{r.sku || "-"}</td>
+                        <td style={td}>{r.supplier_name || "-"}</td>
                         <td style={td}><b>{r.name}</b></td>
                         <td style={{ ...td, maxWidth: 260 }}>
   <div
@@ -673,7 +677,7 @@ if (!authed) {
           {/* 內容 */}
           <div style={{ lineHeight: 1.35 }}>
             <div style={{ fontWeight: 800 }}>
-              {(m.sku ? `${m.sku} / ` : "") + m.name}
+               {(m.supplier_name ? `${m.supplier_name} / ` : "") + m.name}
             </div>
 
             {m.spec && (
