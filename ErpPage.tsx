@@ -162,21 +162,60 @@ const displayRows = useMemo(() => {
   
 
   async function addProduct() {
-    if (!name.trim()) return alert("請輸入產品名稱");
-    const { error } = await supabase.from("products").insert({
-      sku: sku.trim() || null,
-      name: name.trim(),
-       spec: spec.trim() || null,
-      unit: unit.trim() || "pcs",
-    });
-    if (error) return alert("新增產品失敗：" + error.message);
+  if (!name.trim()) return alert("請輸入產品名稱");
 
-    setSku("");
-    setName("");
-    setSpec("");
-    setUnit("pcs");
-    await fetchStock();
+  const supplierName = sku.trim(); // 你目前 sku 欄位其實是廠商名稱
+
+  // 1) 取得 / 建立 supplier
+  let supplierId: string | null = null;
+
+  if (supplierName) {
+    // 先查
+    const { data: s1, error: e1 } = await supabase
+      .from("suppliers")
+      .select("id")
+      .eq("name", supplierName)
+      .maybeSingle();
+
+    if (e1) return alert("查詢廠商失敗：" + e1.message);
+
+    if (s1?.id) {
+      supplierId = s1.id;
+    } else {
+      // 不存在就新增
+      const { data: s2, error: e2 } = await supabase
+        .from("suppliers")
+        .insert({ name: supplierName })
+        .select("id")
+        .single();
+
+      if (e2) return alert("新增廠商失敗：" + e2.message);
+      supplierId = s2.id;
+    }
   }
+
+  // 2) 新增 products（寫 supplier_id）
+  const { error: pErr } = await supabase.from("products").insert({
+    // 這裡 sku 你可以先保留舊相容（存廠商名），或改成 null
+    sku: supplierName || null,          // ✅ 先保留（之後你要把 sku 改成真正 SKU 再調整）
+    supplier_id: supplierId,            // ✅ 新欄位
+    name: name.trim(),
+    spec: spec.trim() || null,
+    unit: unit.trim() || "pcs",
+    // safety_stock: 你如果有新增欄位也可在這裡一起寫
+  });
+
+  if (pErr) return alert("新增產品失敗：" + pErr.message);
+
+  // reset
+  setSku("");
+  setName("");
+  setSpec("");
+  setUnit("pcs");
+
+  await fetchStock();
+}
+
   
   async function saveSafetyStock(productId: string, draft: string) {
   const safe = Number(draft);
