@@ -45,26 +45,7 @@ export default function ErpPage() {
   // 🔍 搜尋關鍵字（如果你還沒加）
   const [onlyLow, setOnlyLow] = useState(false);
   const [q, setQ] = useState("");
-  const [showLowOnly, setShowLowOnly] = useState(false); // 只看低庫存
-  const [history, setHistory] = useState<any[]>([]);
-  const [historyLimit, setHistoryLimit] = useState(50); // 先顯示50筆
-  const filteredRows = useMemo(() => {
-  const kw = q.trim().toLowerCase();
-  let out = rows;
-
-  if (kw) {
-    out = out.filter(r =>
-      (r.supplier_name || "").toLowerCase().includes(kw) ||
-      (r.name || "").toLowerCase().includes(kw)
-    );
-  }
-
-  if (onlyLow) {
-    out = out.filter(r => r.is_low);
-  }
-
-  return out;
-}, [rows, q, onlyLow]);
+  // 備用的顯示選項（目前未使用）
 
 
 
@@ -271,17 +252,17 @@ async function saveEdit() {
 async function fetchMoves(productId?: string) {
   setLoadingMoves(true);
 
-  let q = supabase
+  let moveQuery = supabase
     .from("v_move_history")
     .select("*")
     .order("created_at", { ascending: false })
     .limit(50);
 
   if (productId) {
-    q = q.eq("product_id", productId);
+    moveQuery = moveQuery.eq("product_id", productId);
   }
 
-  const { data, error } = await q;
+  const { data, error } = await moveQuery;
 
   if (error) {
     alert("讀取歷史紀錄失敗：" + error.message);
@@ -371,7 +352,7 @@ if (!authed) {
 
   return (
     <div className={cls.page}>
-  <div className={cls.wrap}></div>
+      <div className={cls.wrap}>
       {/* Header */}
 <div style={{ position: "relative", marginBottom: 20 }}>
   <h1
@@ -635,7 +616,7 @@ if (!authed) {
                 </Field>
                 <button onClick={addMove} style={btn}>送出異動</button>
               </Card>
-              <Card title="入庫 / 出庫歷史（近 50 筆）">
+              <Card title="入庫 / 出庫歷史（選取產品）">
   {!selectedId ? (
     <div style={{ color: "#666" }}>請先在左邊點選一個產品</div>
   ) : loadingMoves ? (
@@ -652,7 +633,7 @@ if (!authed) {
             borderRadius: 12,
             padding: 10,
             display: "grid",
-            gridTemplateColumns: "120px 90px 1fr",
+            gridTemplateColumns: "140px 1fr",
             gap: 10,
             alignItems: "start",
             background: "#fff",
@@ -663,44 +644,23 @@ if (!authed) {
             {new Date(m.created_at).toLocaleString()}
           </div>
 
-          {/* qty */}
-          <div
-            style={{
-              fontWeight: 900,
-              color: m.qty >= 0 ? "#16a34a" : "#dc2626", // 入庫綠 / 出庫紅
-              whiteSpace: "nowrap",
-            }}
-          >
-            {m.qty >= 0 ? `入庫 +${m.qty}` : `出庫 ${m.qty}`}
-          </div>
-
           {/* 內容 */}
           <div style={{ lineHeight: 1.35 }}>
             <div style={{ fontWeight: 800 }}>
-               {(m.supplier_name ? `${m.supplier_name} / ` : "") + m.name}
+              {(m.supplier_name ? `${m.supplier_name} / ` : "") + m.name}
             </div>
-
-            {m.spec && (
-              <div
-                title={m.spec}
-                style={{
-                  fontSize: 12,
-                  color: "#666",
-                  whiteSpace: "nowrap",
-                  overflow: "hidden",
-                  textOverflow: "ellipsis",
-                  maxWidth: 360,
-                }}
-              >
-                {m.spec}
-              </div>
-            )}
-
-            {m.note && (
-              <div style={{ marginTop: 4, fontSize: 12, color: "#111" }}>
-                備註：{m.note}
-              </div>
-            )}
+            <div
+              style={{
+                fontWeight: 900,
+                color: m.qty >= 0 ? "#16a34a" : "#dc2626",
+                marginTop: 4,
+              }}
+            >
+              {m.qty >= 0 ? `入庫 +${m.qty}` : `出庫 ${m.qty}`}
+            </div>
+            <div style={{ marginTop: 4, fontSize: 12, color: "#111" }}>
+              備註：{m.note || "-"}
+            </div>
           </div>
         </div>
       ))}
@@ -714,6 +674,7 @@ if (!authed) {
           </div>
         </>
       )}
+      </div>
     </div>
   );
 }

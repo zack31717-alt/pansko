@@ -1,13 +1,30 @@
 
-import React, { useState, useEffect, useRef } from 'react';
-import { 
-  Wind, RotateCw, Layers, ArrowRight, Activity, Phone, Mail, CheckCircle2,
-  ArrowUp, MapPin, Upload, X, Gauge, Terminal, Database, Download, Copy, Info,
-  Loader2, Image as ImageIcon, FolderOpen, FileCheck, Star, Settings, Truck, ShieldCheck,
-  Layout, PhoneCall, Building2, Printer, Fingerprint, Search, ClipboardCheck, Wrench,
-  TrendingDown, Puzzle, Leaf
+import React, { useEffect, useState } from 'react';
+import {
+  Activity,
+  ArrowRight,
+  ArrowUp,
+  Building2,
+  CheckCircle2,
+  Download,
+  Fingerprint,
+  Layout,
+  Leaf,
+  Mail,
+  MapPin,
+  Phone,
+  PhoneCall,
+  Printer,
+  Puzzle,
+  Search,
+  Settings,
+  Star,
+  TrendingDown,
+  Truck,
+  Wrench,
+  X,
 } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { AnimatePresence, motion } from 'framer-motion';
 
 const IMAGE_BASE = "https://raw.githubusercontent.com/zack31717-alt/pansko/main/";
 
@@ -392,7 +409,7 @@ const App: React.FC = () => {
                   <span className="text-[10px] font-bold tracking-[0.2em] text-blue-500 uppercase">PANSKO</span>
                 </div>
               </div>
-              <p className="text-slate-400 text-sm leading-relaxed mb-8 max-sm-sm">
+              <p className="text-slate-400 text-sm leading-relaxed mb-8 max-sm:text-xs">
                 擁有超過二十年的粉體輸送經驗，提供從設計、製造到安裝的完整自動化解決方案。
               </p>
               <div className="flex flex-col gap-3">
