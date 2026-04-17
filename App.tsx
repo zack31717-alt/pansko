@@ -18,6 +18,7 @@ import {
   Puzzle,
   Search,
   Settings,
+  Smartphone,
   Star,
   TrendingDown,
   Truck,
@@ -201,14 +202,14 @@ const App: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 font-sans text-slate-900 antialiased selection:bg-blue-100">
+    <div className="min-h-screen bg-slate-50 font-sans text-slate-900 antialiased selection:bg-blue-100 pb-28 md:pb-0">
       {/* 導覽列 */}
-      <nav className={`fixed top-0 w-full z-50 transition-all duration-500 ${isScrolled ? 'bg-white/95 backdrop-blur-md py-3 border-b border-slate-200 shadow-sm' : 'bg-transparent py-6'}`}>
-        <div className="container mx-auto px-6 flex justify-between items-center">
+      <nav className={`fixed top-0 w-full z-50 transition-all duration-500 ${isScrolled ? 'bg-white/95 backdrop-blur-md py-3 border-b border-slate-200 shadow-sm' : 'bg-transparent py-4 md:py-6'}`}>
+        <div className="container mx-auto px-4 md:px-6 flex justify-between items-center">
           <div className="flex items-center gap-4 cursor-pointer group" onClick={() => window.scrollTo({top:0, behavior:'smooth'})}>
-            <Logo className="w-10 h-10 transition-transform group-hover:scale-110" />
+            <Logo className="w-9 h-9 md:w-10 md:h-10 transition-transform group-hover:scale-110" />
             <div className="flex flex-col text-left">
-              <span className="font-black text-xl text-blue-900 leading-tight tracking-tighter uppercase">錕興機械</span>
+              <span className="font-black text-lg md:text-xl text-blue-900 leading-tight tracking-tighter uppercase">錕興機械</span>
               <span className="text-[10px] font-bold tracking-[0.2em] text-blue-500 uppercase">PANSKO</span>
             </div>
           </div>
@@ -222,16 +223,16 @@ const App: React.FC = () => {
       </nav>
 
       {/* 英雄區塊 (更新後) */}
-      <header className="relative pt-32 pb-20 overflow-hidden bg-slate-50 border-b border-slate-200">
-        <div className="container mx-auto px-6 grid grid-cols-1 xl:grid-cols-12 gap-12 items-center">
+      <header className="relative pt-24 md:pt-32 pb-14 md:pb-20 overflow-hidden bg-slate-50 border-b border-slate-200">
+        <div className="container mx-auto px-4 md:px-6 grid grid-cols-1 xl:grid-cols-12 gap-8 md:gap-12 items-center">
           <motion.div initial={{ opacity: 0, x: -30 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.8 }} className="xl:col-span-5 text-left">
             <div className="inline-flex items-center gap-2 px-4 py-2 bg-blue-50 text-blue-600 rounded-2xl text-[10px] font-black uppercase tracking-widest border border-blue-100 mb-8">
               <Star size={14} className="fill-blue-600" /> 您的挑戰，我們的專業承諾
             </div>
-            <h1 className="text-6xl lg:text-7xl font-black mb-8 leading-[1.1] tracking-tighter text-slate-950 uppercase italic">
+            <h1 className="text-4xl sm:text-5xl lg:text-7xl font-black mb-6 md:mb-8 leading-[1.1] tracking-tighter text-slate-950 uppercase italic">
               智慧粉體<br/><span className="text-blue-600">自動化控制</span>
             </h1>
-            <p className="text-lg text-slate-600 mb-10 font-medium leading-relaxed max-w-lg">
+            <p className="text-base md:text-lg text-slate-600 mb-8 md:mb-10 font-medium leading-relaxed max-w-lg">
               面對繁複的輸送挑戰，PANSKO 提供的不只是設備，而是經由深入分析後量身打造的穩定產線解決方案。
             </p>
            <div className="flex flex-wrap gap-4">
@@ -239,7 +240,7 @@ const App: React.FC = () => {
   <a
     href="/company-intro.pdf"
     download
-    className="px-10 py-5 bg-blue-600 text-white font-black rounded-2xl
+    className="px-5 md:px-10 py-3 md:py-5 text-sm md:text-base bg-blue-600 text-white font-black rounded-2xl
                hover:bg-blue-700 shadow-xl transition-all flex items-center gap-3"
   >
     公司介紹 <Download size={20} />
@@ -247,7 +248,7 @@ const App: React.FC = () => {
 
   <button
     onClick={() => scrollTo('products')}
-    className="px-10 py-5 bg-slate-900 text-white font-black rounded-2xl
+    className="px-5 md:px-10 py-3 md:py-5 text-sm md:text-base bg-slate-900 text-white font-black rounded-2xl
                hover:bg-slate-800 shadow-xl transition-all flex items-center gap-3 group"
   >
     瀏覽產品目錄
@@ -256,7 +257,7 @@ const App: React.FC = () => {
 
   <button
     onClick={() => scrollTo('contact')}
-    className="px-10 py-5 bg-blue-600 text-white font-black rounded-2xl
+    className="px-5 md:px-10 py-3 md:py-5 text-sm md:text-base bg-blue-600 text-white font-black rounded-2xl
                hover:bg-blue-700 shadow-xl transition-all flex items-center gap-3"
   >
     獲取技術諮詢
@@ -267,7 +268,7 @@ const App: React.FC = () => {
   <a
     href="/kunhing-catalog.pdf"
     download
-    className="px-10 py-5 bg-slate-900 text-white font-black rounded-2xl
+    className="px-5 md:px-10 py-3 md:py-5 text-sm md:text-base bg-slate-900 text-white font-black rounded-2xl
              hover:bg-slate-800 shadow-xl transition-all
              flex items-center gap-3"
   >
@@ -279,7 +280,7 @@ const App: React.FC = () => {
   <a
     href="/company-performance.pdf"
     download
-    className="px-10 py-5 bg-slate-900 text-white font-black rounded-2xl
+    className="px-5 md:px-10 py-3 md:py-5 text-sm md:text-base bg-slate-900 text-white font-black rounded-2xl
              hover:bg-slate-800 shadow-xl transition-all
              flex items-center gap-3"
   >
@@ -303,9 +304,9 @@ const App: React.FC = () => {
       </header>
 
       {/* 產品展示區塊 */}
-      <section id="products" className="py-24 relative z-10">
-        <div className="container mx-auto px-6">
-          <div className="text-center mb-20">
+      <section id="products" className="py-16 md:py-24 relative z-10">
+        <div className="container mx-auto px-4 md:px-6">
+          <div className="text-center mb-12 md:mb-20">
             <h2 className="text-4xl font-black text-slate-900 mb-4 tracking-tighter uppercase italic">精選設備與方案</h2>
             <div className="w-20 h-1.5 bg-blue-600 mx-auto rounded-full"></div>
           </div>
@@ -318,7 +319,7 @@ const App: React.FC = () => {
                 <motion.div 
                   key={p.id} id={p.id} 
                   initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} 
-                  className="bg-white p-10 lg:p-14 rounded-[3.5rem] border border-slate-200 shadow-xl hover:shadow-2xl hover:border-blue-200 transition-all group overflow-hidden"
+                  className="bg-white p-6 md:p-10 lg:p-14 rounded-[2rem] md:rounded-[3.5rem] border border-slate-200 shadow-xl hover:shadow-2xl hover:border-blue-200 transition-all group overflow-hidden"
                 >
                   <div className="flex flex-col lg:flex-row gap-12 items-center">
                     <div className="flex-1 text-left">
@@ -327,8 +328,8 @@ const App: React.FC = () => {
                           {p.cat}
                         </div>
                       </div>
-                      <h3 className="text-4xl font-black text-slate-900 mb-4 tracking-tight">{p.title}</h3>
-                      <p className="text-lg text-blue-600/60 font-bold mb-8 italic">{p.subtitle}</p>
+                      <h3 className="text-2xl md:text-4xl font-black text-slate-900 mb-3 md:mb-4 tracking-tight">{p.title}</h3>
+                      <p className="text-base md:text-lg text-blue-600/60 font-bold mb-6 md:mb-8 italic">{p.subtitle}</p>
                       <ul className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         {p.advantages.map((adv, i) => (
                           <li key={i} className="flex gap-3 text-slate-600 font-semibold items-start leading-snug">
@@ -339,7 +340,7 @@ const App: React.FC = () => {
                       </ul>
                     </div>
 
-                    <div className="lg:w-1/2 w-full aspect-square rounded-[2.5rem] bg-slate-50 border border-slate-200 flex items-center justify-center p-8 relative overflow-hidden group">
+                    <div className="lg:w-1/2 w-full aspect-square rounded-[1.5rem] md:rounded-[2.5rem] bg-slate-50 border border-slate-200 flex items-center justify-center p-5 md:p-8 relative overflow-hidden group">
                       {isError ? (
                         <div className="text-center opacity-20"><p.Graphic /></div>
                       ) : src ? (
@@ -362,9 +363,9 @@ const App: React.FC = () => {
       </section>
 
       {/* 服務流程區塊 */}
-      <section id="workflow" className="py-24 bg-slate-900 text-white relative overflow-hidden">
-        <div className="container mx-auto px-6 relative z-10">
-          <div className="text-center mb-20">
+      <section id="workflow" className="py-16 md:py-24 bg-slate-900 text-white relative overflow-hidden">
+        <div className="container mx-auto px-4 md:px-6 relative z-10">
+          <div className="text-center mb-12 md:mb-20">
             <h2 className="text-4xl font-black mb-4 tracking-tighter uppercase italic">標準自動化流程</h2>
             <p className="text-slate-400 font-medium">從規畫到安裝，我們為您把關每一個細節</p>
             <div className="w-20 h-1.5 bg-blue-500 mx-auto rounded-full mt-6"></div>
@@ -397,8 +398,8 @@ const App: React.FC = () => {
       </section>
 
       {/* 頁尾與聯絡資訊 */}
-      <footer id="contact" className="py-24 bg-slate-950 text-white border-t border-slate-900 text-left">
-        <div className="container mx-auto px-6">
+      <footer id="contact" className="py-16 md:py-24 bg-slate-950 text-white border-t border-slate-900 text-left">
+        <div className="container mx-auto px-4 md:px-6">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-16 mb-20">
             {/* 公司簡介 */}
             <div className="flex flex-col items-start">
@@ -430,7 +431,7 @@ const App: React.FC = () => {
                   </div>
                   <div>
                     <div className="text-[10px] text-slate-500 font-bold uppercase tracking-wider mb-1">電話</div>
-                    <div className="text-lg font-bold">03-9908036<br/>+8651286176628 昆山碧興機械有限公司</div>
+                    <div className="text-base md:text-lg font-bold">03-9908036<br/>+8651286176628 昆山碧興機械有限公司</div>
                   </div>
                 </div>
                 <div className="flex items-start gap-4">
@@ -439,7 +440,7 @@ const App: React.FC = () => {
                   </div>
                   <div>
                     <div className="text-[10px] text-slate-500 font-bold uppercase tracking-wider mb-1">傳真 (FAX)</div>
-                    <div className="text-lg font-bold">03-9905853<br/>+8651286176629 昆山碧興機械有限公司</div>
+                    <div className="text-base md:text-lg font-bold">03-9905853<br/>+8651286176629 昆山碧興機械有限公司</div>
                   </div>
                 </div>
                 <div className="flex items-start gap-4">
@@ -448,7 +449,7 @@ const App: React.FC = () => {
                   </div>
                   <div>
                     <div className="text-[10px] text-slate-500 font-bold uppercase tracking-wider mb-1">電子郵件</div>
-                    <div className="text-lg font-bold">zack31717@gmail.com</div>
+                    <div className="text-base md:text-lg font-bold">zack31717@gmail.com</div>
                   </div>
                 </div>
               </div>
@@ -461,7 +462,7 @@ const App: React.FC = () => {
                   </div>
                   <div>
                     <div className="text-[10px] text-slate-500 font-bold uppercase tracking-wider mb-1">公司地址</div>
-                    <div className="text-lg font-bold leading-relaxed">
+                    <div className="text-base md:text-lg font-bold leading-relaxed">
                       錕興機械有限公司<br/>宜蘭縣五結鄉成興村<br/>利工一路二段116巷15號<br/>昆山碧興機械有限公司<br/>江蘇省昆山市開發區春旭路18號<br/>聯彩商務中心504室
                     </div>
                   </div>
@@ -472,7 +473,7 @@ const App: React.FC = () => {
                   </div>
                   <div>
                     <div className="text-[10px] text-slate-500 font-bold uppercase tracking-wider mb-1">工廠</div>
-                    <div className="text-lg font-bold leading-relaxed">利澤工業區<br/>江蘇省昆山市</div>
+                    <div className="text-base md:text-lg font-bold leading-relaxed">利澤工業區<br/>江蘇省昆山市</div>
                   </div>
                 </div>
               </div>
@@ -499,12 +500,12 @@ const App: React.FC = () => {
       <AnimatePresence>
         {showExportModal && (
           <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-slate-950/90 backdrop-blur-xl">
-            <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }} className="bg-white w-full max-w-4xl max-h-[85vh] rounded-[3.5rem] shadow-2xl flex flex-col overflow-hidden text-left border border-slate-200">
-              <div className="p-10 border-b flex justify-between items-center bg-slate-50">
-                <h3 className="text-2xl font-black text-slate-950 uppercase italic tracking-tighter">Images 對應清單</h3>
+            <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }} className="bg-white w-full max-w-4xl max-h-[85vh] rounded-[1.75rem] md:rounded-[3.5rem] shadow-2xl flex flex-col overflow-hidden text-left border border-slate-200">
+              <div className="p-4 md:p-10 border-b flex justify-between items-center bg-slate-50">
+                <h3 className="text-lg md:text-2xl font-black text-slate-950 uppercase italic tracking-tighter">Images 對應清單</h3>
                 <button onClick={() => setShowExportModal(false)} className="p-3 hover:bg-slate-200 rounded-2xl"><X /></button>
               </div>
-              <div className="p-10 flex-1 overflow-auto bg-slate-50 text-left">
+              <div className="p-4 md:p-10 flex-1 overflow-auto bg-slate-50 text-left">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {initialProductsRaw.map(p => (
                     <div key={p.id} className="p-5 bg-white border border-slate-200 rounded-2xl flex justify-between items-center group hover:border-blue-400 transition-all">
@@ -521,8 +522,36 @@ const App: React.FC = () => {
         )}
       </AnimatePresence>
 
-      <button onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })} className="fixed bottom-10 right-10 w-16 h-16 bg-blue-600 text-white rounded-2xl shadow-2xl flex items-center justify-center hover:bg-blue-700 hover:scale-110 transition-all z-50">
-        <ArrowUp size={28} strokeWidth={3} />
+      <div
+        className="fixed bottom-0 inset-x-0 md:hidden z-50 border-t border-slate-200 bg-white/95 backdrop-blur-xl px-3 pt-2 pb-3"
+        style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 0.5rem)' }}
+      >
+        <div className="grid grid-cols-5 gap-2 max-w-md mx-auto text-[10px] font-bold text-slate-500">
+          <button onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })} className="flex flex-col items-center gap-1 py-2 rounded-xl hover:bg-slate-100">
+            <Smartphone size={16} />
+            <span>首頁</span>
+          </button>
+          <button onClick={() => scrollTo('products')} className="flex flex-col items-center gap-1 py-2 rounded-xl hover:bg-slate-100">
+            <Layout size={16} />
+            <span>產品</span>
+          </button>
+          <button onClick={() => scrollTo('workflow')} className="flex flex-col items-center gap-1 py-2 rounded-xl hover:bg-slate-100">
+            <Settings size={16} />
+            <span>流程</span>
+          </button>
+          <button onClick={() => setShowExportModal(true)} className="flex flex-col items-center gap-1 py-2 rounded-xl hover:bg-slate-100">
+            <Download size={16} />
+            <span>檔名</span>
+          </button>
+          <button onClick={() => scrollTo('contact')} className="flex flex-col items-center gap-1 py-2 rounded-xl hover:bg-slate-100">
+            <Phone size={16} />
+            <span>聯絡</span>
+          </button>
+        </div>
+      </div>
+
+      <button onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })} className="fixed bottom-24 md:bottom-10 right-4 md:right-10 w-12 h-12 md:w-16 md:h-16 bg-blue-600 text-white rounded-2xl shadow-2xl flex items-center justify-center hover:bg-blue-700 hover:scale-110 transition-all z-50">
+        <ArrowUp size={22} strokeWidth={3} />
       </button>
     </div>
   );
