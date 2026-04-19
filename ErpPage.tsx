@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+﻿import React, { useEffect, useMemo, useState } from "react";
 import { supabase } from "./supabaseClient";
 
 type StockRow = {
@@ -56,12 +56,29 @@ export default function ErpPage() {
 
   const [editingSafeId, setEditingSafeId] = useState("");
   const [safeDraft, setSafeDraft] = useState("");
+  const [viewportWidth, setViewportWidth] = useState(() => {
+    if (typeof window === "undefined") {
+      return 1280;
+    }
+    return window.innerWidth;
+  });
 
   useEffect(() => {
     if (localStorage.getItem("erp_authed") === "1") {
       setAuthed(true);
     }
   }, []);
+
+  useEffect(() => {
+    function onResize() {
+      setViewportWidth(window.innerWidth);
+    }
+    window.addEventListener("resize", onResize);
+    return () => window.removeEventListener("resize", onResize);
+  }, []);
+
+  const isTablet = viewportWidth < 1120;
+  const isMobile = viewportWidth < 768;
 
   const selected = useMemo(
     () => rows.find((row) => row.id === selectedId),
@@ -337,7 +354,7 @@ export default function ErpPage() {
   if (!authed) {
     return (
       <div className={cls.page}>
-        <div className={cls.wrap}>
+        <div className={cls.wrap} style={isMobile ? { padding: "20px 12px" } : undefined}>
           <h1 style={{ fontSize: 24, fontWeight: 800, marginBottom: 12 }}>ERP 登入</h1>
           <div style={{ color: "#555", marginBottom: 12 }}>請輸入密碼才可進入</div>
 
@@ -371,15 +388,16 @@ export default function ErpPage() {
 
   return (
     <div className={cls.page}>
-      <div className={cls.wrap}>
+      <div className={cls.wrap} style={isMobile ? { padding: "20px 12px" } : undefined}>
         <div style={{ position: "relative", marginBottom: 20 }}>
           <h1
             style={{
-              fontSize: 40,
+              fontSize: isMobile ? 26 : 40,
               fontWeight: 900,
-              textAlign: "center",
+              textAlign: isMobile ? "left" : "center",
               margin: 0,
               letterSpacing: 1,
+              paddingRight: isMobile ? 0 : 96,
             }}
           >
             ERP - 庫存管理
@@ -391,15 +409,16 @@ export default function ErpPage() {
               setAuthed(false);
             }}
             style={{
-              position: "absolute",
-              right: 0,
-              top: 0,
+              position: isMobile ? "static" : "absolute",
+              right: isMobile ? undefined : 0,
+              top: isMobile ? undefined : 0,
               padding: "10px 14px",
               borderRadius: 12,
               border: "1px solid #ccc",
               background: "white",
               fontWeight: 800,
               cursor: "pointer",
+              marginTop: isMobile ? 10 : 0,
             }}
           >
             登出
@@ -413,7 +432,13 @@ export default function ErpPage() {
         {loading ? (
           <div>載入中...</div>
         ) : (
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 420px", gap: 18 }}>
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: isTablet ? "1fr" : "1fr 420px",
+              gap: isMobile ? 12 : 18,
+            }}
+          >
             <div style={{ border: "1px solid #ddd", borderRadius: 12, overflow: "hidden" }}>
               <div
                 style={{
@@ -434,7 +459,7 @@ export default function ErpPage() {
                   style={{ ...input, marginBottom: 12 }}
                 />
 
-                <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
+                <div style={{ display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap" }}>
                   <button
                     onClick={() => setOnlyLow((value) => !value)}
                     style={{
@@ -457,7 +482,7 @@ export default function ErpPage() {
               </div>
 
               <div style={{ width: "100%", overflowX: "auto" }}>
-                <table style={{ width: "100%", borderCollapse: "collapse" }}>
+                <table style={{ width: "100%", minWidth: isMobile ? 720 : "100%", borderCollapse: "collapse" }}>
                   <thead>
                     <tr style={{ background: "#fff" }}>
                       <th style={th}>廠商</th>
@@ -558,7 +583,7 @@ export default function ErpPage() {
               </div>
             </div>
 
-            <div style={{ display: "flex", flexDirection: "column", gap: 18 }}>
+            <div style={{ display: "flex", flexDirection: "column", gap: isMobile ? 12 : 18 }}>
               <Card title="新增產品">
                 <Field label="廠商（可空）">
                   <input value={sku} onChange={(e) => setSku(e.target.value)} style={input} />
@@ -636,7 +661,11 @@ export default function ErpPage() {
                           borderRadius: 12,
                           padding: 10,
                           display: "grid",
-                          gridTemplateColumns: "120px 90px 1fr",
+                          gridTemplateColumns: isMobile
+                            ? "1fr"
+                            : isTablet
+                              ? "100px 80px 1fr"
+                              : "120px 90px 1fr",
                           gap: 10,
                           alignItems: "start",
                           background: "#fff",
