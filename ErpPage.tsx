@@ -168,20 +168,23 @@ export default function ErpPage() {
       return;
     }
 
-    const supplierName = sku.trim();
+    const supplierName = normalizeSupplierName(sku);
     let supplierId: string | null = null;
 
     if (supplierName) {
-      const { data: existingSupplier, error: supplierQueryError } = await supabase
+      const supplierKey = getSupplierKey(supplierName);
+      const { data: existingSuppliers, error: supplierQueryError } = await supabase
         .from("suppliers")
-        .select("id")
-        .eq("name", supplierName)
-        .maybeSingle();
+        .select("id, name");
 
       if (supplierQueryError) {
         alert("查詢廠商失敗：" + supplierQueryError.message);
         return;
       }
+
+      const existingSupplier = existingSuppliers?.find(
+        (supplier) => getSupplierKey(supplier.name || "") === supplierKey
+      );
 
       if (existingSupplier?.id) {
         supplierId = existingSupplier.id;
@@ -719,6 +722,14 @@ export default function ErpPage() {
 
 function getSupplierLabel(row: { supplier_name?: string | null; sku?: string | null }) {
   return row.supplier_name || row.sku || "";
+}
+
+function normalizeSupplierName(value: string) {
+  return value.trim().replace(/\s+/g, " ");
+}
+
+function getSupplierKey(value: string) {
+  return normalizeSupplierName(value).toLowerCase();
 }
 
 function isLowStock(row: StockRow) {
