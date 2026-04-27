@@ -205,7 +205,7 @@ export default function ErpPage() {
     }
 
     const { error } = await supabase.from("products").insert({
-      sku: supplierName || null,
+      sku: null,
       supplier_id: supplierId,
       name: name.trim(),
       spec: spec.trim() || null,
